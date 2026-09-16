@@ -96,6 +96,21 @@ Indica que os requisitos definidos para a simulação foram atendidos.
 
 Indica que pelo menos uma condição crítica não foi atendida.
 
+ ## Verificação
+
+  O algoritmo verifica individualmente os grupos da telemetria.
+
+  A missão recebe **PRONTO PARA DECOLAR** quando todas as condições são aprovadas.
+
+  Caso uma condição seja reprovada, recebe **DECOLAGEM ABORTADA**.
+
+| Classificação | Intervalo | Ação | Base real |
+| -------- | -------- | -------- | -------- |
+| :green_circle: | Todos os testes internos aprovados | Liberado | Aviônica real certificada por Níveis A/B da norma SAE ARP 4761 |
+| :yellow_circle:| Algum teste fora do ideal | Sob observação | Cada subsistema reporta a própria saúde ao sistema de decisão |
+| :red_circle: | Algum teste reprovado | Aborta | Módulo não confiável para a decolagem  |
+
+
 ---
 
 ## Telemetria analisada
@@ -160,23 +175,6 @@ O sistema verifica os seguintes grupos de dados:
 | :red_circle: | abaixo de 220 ou acima de 280 | Aborta | Alimentação de propelente comprometida  |
 
 
----
-
- ## Verificação
-
-  O algoritmo verifica individualmente os grupos da telemetria.
-
-  A missão recebe **PRONTO PARA DECOLAR** quando todas as condições são aprovadas.
-
-  Caso uma condição seja reprovada, recebe **DECOLAGEM ABORTADA**.
-
-  | Classificação | Intervalo | Ação | Base real |
-| -------- | -------- | -------- | -------- |
-| :green_circle: | Todos os testes internos aprovados | Liberado | Aviônica real certificada por Níveis A/B da norma SAE ARP 4761 |
-| :yellow_circle:| Algum teste fora do ideal | Sob observação | Cada subsistema reporta a própria saúde ao sistema de decisão |
-| :red_circle: | Algum teste reprovado | Aborta | Módulo não confiável para a decolagem  |
-
-
   ---
 
   ## Análise assistida por Inteligência Artificial
@@ -197,18 +195,47 @@ A análise auxilia na:
 - Jupyter Notebook
 - PyCharm
 - GitHub
+- Pandas
+- Scikit-Learn
 
  ---
 
- ## Como executar
+ ## ⚙️ Como executar
 
-### Jupyter Notebook
+### Pré-requisitos
 
-1. Faça o download ou clone deste repositório.
-2. Abra o arquivo em um ambiente compatível com Jupyter Notebook.
-3. Selecione um kernel Python.
-4. Execute todas as células na ordem ou utilize **Run All**.
-5. Consulte o relatório de verificação exibido no próprio Notebook.
+Antes de executar o projeto, é necessário ter instalado:
+
+- Python 
+- Jupyter Notebook ou JupyterLab
+- Git (opcional, caso o repositório seja clonado)
+
+### Execução
+
+1. Clone o repositório ou faça o download dos arquivos do projeto.
+
+2. Abra a pasta do projeto no Jupyter Notebook, JupyterLab, VS Code ou outro ambiente compatível.
+
+3. Abra o arquivo `.ipynb`.
+
+4. Selecione um kernel Python compatível.
+
+5. Antes de executar o projeto, instale as bibliotecas utilizadas:
+
+```bash
+pip install pandas scikit-learn
+```
+
+6. Execute as células do Notebook na ordem, utilizando a opção **Run All** ou executando-as individualmente.
+
+7. Ao final da execução, o sistema realizará a análise da telemetria e apresentará o resultado da verificação.
+
+### Resultado esperado
+
+O sistema processará os dados simulados de telemetria, classificará os parâmetros analisados e apresentará o diagnóstico final da missão como:
+
+- 🟢 **PRONTO PARA DECOLAR**
+- 🔴 **DECOLAGEM ABORTADA**
 
  ---
 
