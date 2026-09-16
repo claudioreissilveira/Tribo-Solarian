@@ -60,7 +60,7 @@ A análise auxilia na:
 
  ---
 
- ## 📸 Evidências de execução
+ ## Evidências de execução
 
 ### Verificação da telemetria
 
