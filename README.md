@@ -66,7 +66,7 @@ Esses valores representam informações como:
 
 ### Entrada Manual de Dados
 
-![Entrada Manual de Dados](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/Entrada_manual_de_dados.png?raw=true)
+![Entrada Manual de Dados](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/testes/Entrada_manual_de_dados.png?raw=true)
 
 #### 2. Validação
 
@@ -116,7 +116,7 @@ Indica que pelo menos uma condição crítica não foi atendida.
 
 ### Teste de Validação dos Modelos
 
-![Teste de Validação dos Modelos](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/Testes_da_validacoes_dos%20modelos.png?raw=true)
+![Teste de Validação dos Modelos](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/testes/Testes_da_validacoes_dos%20modelos.png?raw=true)
 
 
 ---
@@ -184,7 +184,7 @@ O sistema verifica os seguintes grupos de dados:
 
 ### Verificação da Telemetria
 
-![Verificação da Telemetria](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/Verificacao_telemetria.png?raw=true)
+![Verificação da Telemetria](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/testes/Verificacao_telemetria.png?raw=true)
   ---
 
   ## Análise assistida por Inteligência Artificial
@@ -199,7 +199,7 @@ A análise auxilia na:
 
 ### Teste de validação do modelo da IA
 
-![Teste de validação do modelo da IA](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/Testes_de_validacao_modelos_IA.png?raw=true)
+![Teste de validação do modelo da IA](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/testes/Testes_de_validacao_modelos_IA.png?raw=true)
 
  ---
 
