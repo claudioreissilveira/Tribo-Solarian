@@ -110,6 +110,9 @@ Indica que pelo menos uma condição crítica não foi atendida.
 | :yellow_circle:| Algum teste fora do ideal | Sob observação | Cada subsistema reporta a própria saúde ao sistema de decisão |
 | :red_circle: | Algum teste reprovado | Aborta | Módulo não confiável para a decolagem  |
 
+### Validação de Segurança
+
+
 
 ---
 
@@ -174,6 +177,7 @@ O sistema verifica os seguintes grupos de dados:
 | :yellow_circle:| 220 a 240 ou 260 a 280 | Atenção | Fora do ideal, monitorar de perto |
 | :red_circle: | abaixo de 220 ou acima de 280 | Aborta | Alimentação de propelente comprometida  |
 
+### Verificação da Telemetria
 
   ---
 
@@ -186,6 +190,10 @@ A análise auxilia na:
 - classificação dos dados;
 - identificação de possíveis anomalias;
 - análise de riscos.
+
+### Teste de validação do modelo IA
+
+
 
  ---
 
@@ -239,8 +247,3 @@ O sistema processará os dados simulados de telemetria, classificará os parâme
 
  ---
 
- ## Evidências de execução
-
-### Verificação da telemetria
-
-<img width="1770" height="813" alt="Verificacao_telemetria" src="https://github.com/user-attachments/assets/10b3f1ce-eb3d-45da-bbb6-5e8bb5e44a80" />
