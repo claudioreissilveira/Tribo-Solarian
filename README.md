@@ -2,8 +2,100 @@
 
 ## Relatório Pré-Decolagem
 
-Projeto em desenvolvimento para Fase I do curso de Ciências da Computação, consiste em um sistema automatizado em Python para simulação de telemetria, validação de restrições de segurança, cálculos de autonomia energética e emissão de diagnósticos inteligentes baseados em regras para missões aeroespaciais.
+A Missão SLR-33 foi desenvolvida como uma simulação de um sistema de apoio à decisão para uma missão aeroespacial. A proposta do projeto surgiu da necessidade de representar, em um ambiente computacional, uma situação na qual diferentes informações de telemetria precisam ser analisadas simultaneamente antes de uma operação crítica.
+
+Em uma missão real, a decisão de realizar uma decolagem depende da condição de diversos subsistemas. Temperatura, pressão, energia disponível e integridade estrutural são exemplos de parâmetros que precisam ser constantemente monitorados. Um único parâmetro fora dos limites estabelecidos pode representar um risco para a missão.
+
+A partir desse conceito, o projeto foi pensado para transformar dados simulados de sensores em uma decisão operacional, utilizando regras previamente estabelecidas. Dessa forma, o sistema recebe os valores de telemetria, verifica cada parâmetro individualmente, classifica sua condição e, ao final, determina se a missão está PRONTA PARA DECOLAR ou se a DECOLAGEM DEVE SER ABORTADA.
  
+---
+
+## :dart: Objetivo do Projeto
+
+O principal objetivo da SLR-33 é desenvolver um sistema em Python capaz de realizar uma verificação automatizada das condições de uma missão antes da decolagem.
+
+O sistema foi projetado para:
+
+- receber dados simulados de telemetria;
+- analisar diferentes parâmetros simultaneamente;
+- comparar os valores recebidos com limites previamente definidos;
+- classificar cada parâmetro como Nominal, Atenção ou Aborta;
+- identificar situações que possam comprometer a segurança da missão;
+- consolidar os resultados individuais em uma decisão final;
+- apresentar um diagnóstico de fácil interpretação;
+- utilizar Inteligência Artificial como ferramenta auxiliar na interpretação dos resultados.
+
+---
+
+## :brain: Como o projeto foi pensado
+
+O desenvolvimento da SLR-33 foi estruturado a partir de uma lógica de monitoramento → validação → classificação → decisão.
+
+Primeiramente, foram definidos os principais parâmetros que poderiam representar condições relevantes para uma missão: temperatura interna e externa, integridade estrutural, nível de energia e pressão dos tanques.
+
+Em seguida, foram estabelecidas faixas de operação para cada parâmetro. Essas faixas dividem os valores possíveis em três estados:
+
+🟢 Nominal: condição considerada adequada para a missão;
+🟡 Atenção: condição que ainda não representa uma reprovação imediata, mas exige monitoramento;
+🔴 Aborta: condição que ultrapassa o limite estabelecido e impede a liberação da missão.
+
+Essa estrutura permite que o sistema não apenas indique se um valor está correto ou incorreto, mas também forneça uma interpretação intermediária para situações que exigem atenção.
+
+A etapa seguinte consiste na aplicação das regras de decisão. Cada grupo de telemetria é analisado individualmente e seu resultado é armazenado para que, posteriormente, o sistema possa consolidar todas as informações.
+
+---
+
+## :gear: Processo de funcionamento
+
+O funcionamento da aplicação pode ser representado pelo seguinte fluxo:
+
+Dados de telemetria → Validação dos valores → Aplicação das regras → Classificação → Consolidação → Diagnóstico final
+
+#### 1. Entrada dos dados
+
+O sistema recebe valores simulados referentes aos sensores e subsistemas da missão.
+
+Esses valores representam informações como:
+
+temperatura da cabine;
+temperatura externa;
+integridade estrutural;
+nível de energia;
+pressão do tanque de hélio;
+pressão do tanque de propelente.
+
+#### 2. Validação
+
+Cada valor recebido é comparado com os limites definidos para seu respectivo parâmetro.
+
+Essa etapa evita que a decisão seja baseada apenas na interpretação visual dos dados. O algoritmo realiza as comparações de maneira sistemática e padronizada.
+
+#### 3. Classificação
+
+Após a comparação, cada parâmetro recebe uma classificação.
+
+Por exemplo, uma temperatura interna dentro da faixa nominal é classificada como Nominal. Caso esteja próxima dos limites estabelecidos, recebe Atenção. Se ultrapassar uma condição considerada crítica, recebe Aborta.
+
+#### 4. Consolidação dos resultados
+
+Depois da análise individual, os resultados são reunidos para produzir uma visão geral da missão.
+
+Essa etapa é importante porque uma missão pode apresentar diversos parâmetros normais e, ainda assim, possuir uma única condição crítica capaz de impedir a decolagem.
+
+#### 5. Diagnóstico final
+
+Por fim, o sistema apresenta o diagnóstico geral da missão.
+
+Existem dois resultados principais:
+
+#### PRONTO PARA DECOLAR
+
+Indica que os requisitos definidos para a simulação foram atendidos.
+
+#### DECOLAGEM ABORTADA
+
+Indica que pelo menos uma condição crítica não foi atendida.
+
 ---
 
 ## Telemetria analisada
