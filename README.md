@@ -57,12 +57,16 @@ O sistema recebe valores simulados referentes aos sensores e subsistemas da miss
 
 Esses valores representam informações como:
 
-temperatura da cabine;
-temperatura externa;
-integridade estrutural;
-nível de energia;
-pressão do tanque de hélio;
-pressão do tanque de propelente.
+- temperatura da cabine;
+- temperatura externa;
+- integridade estrutural;
+- nível de energia;
+- pressão do tanque de hélio;
+- pressão do tanque de propelente.
+
+### Entrada Manual de Dados
+
+![Entrada Manual de Dados](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/Entrada_manual_de_dados.png?raw=true)
 
 #### 2. Validação
 
@@ -110,8 +114,9 @@ Indica que pelo menos uma condição crítica não foi atendida.
 | :yellow_circle:| Algum teste fora do ideal | Sob observação | Cada subsistema reporta a própria saúde ao sistema de decisão |
 | :red_circle: | Algum teste reprovado | Aborta | Módulo não confiável para a decolagem  |
 
-### Validação de Segurança
+### Teste de Validação dos Modelos
 
+![Teste de Validação dos Modelos](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/Testes_da_validacoes_dos%20modelos.png?raw=true)
 
 
 ---
@@ -179,6 +184,7 @@ O sistema verifica os seguintes grupos de dados:
 
 ### Verificação da Telemetria
 
+![Verificação da Telemetria](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/Verificacao_telemetria.png?raw=true)
   ---
 
   ## Análise assistida por Inteligência Artificial
@@ -191,9 +197,9 @@ A análise auxilia na:
 - identificação de possíveis anomalias;
 - análise de riscos.
 
-### Teste de validação do modelo IA
+### Teste de validação do modelo da IA
 
-
+![Teste de validação do modelo da IA](https://github.com/claudioreissilveira/Tribo-Solarian/blob/pre-decolagem/Testes_de_validacao_modelos_IA.png?raw=true)
 
  ---
 
@@ -224,7 +230,7 @@ Antes de executar o projeto, é necessário ter instalado:
 
 2. Abra a pasta do projeto no Jupyter Notebook, JupyterLab, VS Code ou outro ambiente compatível.
 
-3. Abra o arquivo `.ipynb`.
+3. Abra o arquivo `TriboSolarian_ScriptPreDecolagem.ipynb`.
 
 4. Selecione um kernel Python compatível.
 
