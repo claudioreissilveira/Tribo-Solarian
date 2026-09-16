@@ -12,24 +12,60 @@ O sistema verifica os seguintes grupos de dados:
 
 - Temperaturas;
 
-<img width="1278" height="347" alt="Temp interna" src="https://github.com/user-attachments/assets/e16e9564-b3d1-4618-8e3d-8958aa2e85d5" />.
+#### Temperatura interna °C:
 
-<img width="1278" height="323" alt="Temp externa" src="https://github.com/user-attachments/assets/c951227e-d1f4-4ee7-b929-18eec18f5ab2" />.
+| Classificação | Intervalo | Ação | Base real |
+| -------- | -------- | -------- | -------- |
+| :green_circle: | 21 a 25 | Nominal | Cabine da ISS mantida em 22–24°C |
+| :yellow_circle:| 18 a 21 ou 25 a 27 | Atenção | Ainda dentro do limite operacional real |
+| :red_circle: | abaixo de 18 ou acima de 27 | Aborta | Fora da faixa operacional segura  |
 
-- Integridade estrutural;
 
-<img width="1278" height="297" alt="Int estrutural" src="https://github.com/user-attachments/assets/cca8d7e0-4fb5-4a27-8406-26a4aacdf52f" />.
+
+#### Temperatura externa °C:
+
+| Classificação | Intervalo | Ação | Base real |
+| -------- | -------- | -------- | -------- |
+| :green_circle: | 5 a 35 | Nominal | Condição térmica segura para materiais/vedações |
+| :yellow_circle:| -5 a 5 ou 35 a 45 | Atenção | Fora do ideal, monitorar de perto |
+| :red_circle: | abaixo de -5 ou acima de 45 | Aborta | Challenger (1986) lançou a ~2°C, abaixo do testado com segurança  |
+
+
+- Integridade estrutural (0 ou 1):
+
+| Classificação | Intervalo | Ação | Base real |
+| -------- | -------- | -------- | -------- |
+| :green_circle: | Nenhum sensor excedeu o limiar | Nominal | ISS opera 81 acelerômetros + extensômetros em sua estrutura |
+| :red_circle: | Ao menos um sensor excedeu o limiar  | Aborta | Sinal contínuo de vibração/deformação vira alerta binário ao cruzar o limiar de projeto  |
+
 
  
-- Níveis de energia;
+- Níveis de energia (% da carga total)
 
-<img width="1281" height="314" alt="Niveis de energia" src="https://github.com/user-attachments/assets/bd23bf90-cd1f-4729-9a82-46ce2f4c5749" />.
+| Classificação | Intervalo | Ação | Base real |
+| -------- | -------- | -------- | -------- |
+| :green_circle: | 85 a 100 | Nominal | Carga plena, margem ampla |
+| :yellow_circle:| 60 a 85 | Atenção | Adequada, sem folga confortável |
+| :red_circle: | abaixo de 60 | Aborta | Baterias NiH2 da ISS operam com DOD máx. de 35%, sempre reservam margem  |
+
 
 - Pressão dos tanques.
 
-<img width="1278" height="357" alt="pressao tanque pressurizante" src="https://github.com/user-attachments/assets/fb4b01e4-614b-4cb3-86ee-916b81a780e0" />.
+#### Pressão do tanque pressurizante de hélio (psi):
 
-<img width="1281" height="318" alt="Pressao tanque propelente" src="https://github.com/user-attachments/assets/c8578c00-385b-4419-a385-af35badd4e57" />
+| Classificação | Intervalo | Ação | Base real |
+| -------- | -------- | -------- | -------- |
+| :green_circle: | 5500 a 6500 | Nominal | Tanques pressurizantes reais carregados perto de 6000 psi |
+| :yellow_circle:| 4500 a 5500 ou 6500 a 7000 | Atenção | Fora do ideal, monitorar de perto |
+| :red_circle: | abaixo de 4500 ou acima de 7000 | Aborta | Insuficiente para pressurizar, ou risco de ruptura  |
+
+#### Pressão do tanque de propelente regulado (psi):
+
+| Classificação | Intervalo | Ação | Base real |
+| -------- | -------- | -------- | -------- |
+| :green_circle: | 240 a 260 | Nominal | Pressão de alimentação típica de sistemas hipergólicos regulados |
+| :yellow_circle:| 220 a 240 ou 260 a 280 | Atenção | Fora do ideal, monitorar de perto |
+| :red_circle: | abaixo de 220 ou acima de 280 | Aborta | Alimentação de propelente comprometida  |
 
 
 ---
@@ -42,7 +78,11 @@ O sistema verifica os seguintes grupos de dados:
 
   Caso uma condição seja reprovada, recebe **DECOLAGEM ABORTADA**.
 
-  <img width="1281" height="408" alt="Verificacao" src="https://github.com/user-attachments/assets/ed59fb19-b4f5-429a-9361-3895d073b111" />
+  | Classificação | Intervalo | Ação | Base real |
+| -------- | -------- | -------- | -------- |
+| :green_circle: | Todos os testes internos aprovados | Liberado | Aviônica real certificada por Níveis A/B da norma SAE ARP 4761 |
+| :yellow_circle:| Algum teste fora do ideal | Sob observação | Cada subsistema reporta a própria saúde ao sistema de decisão |
+| :red_circle: | Algum teste reprovado | Aborta | Módulo não confiável para a decolagem  |
 
 
   ---
