@@ -232,7 +232,7 @@ def desfazer_ultimo_evento(estado):
     # Toda reversão devolve o módulo à fila, como exige o material de apoio.
     estado["fila_pouso"].insert(min(evento["indice"], len(estado["fila_pouso"])), modulo)
     ordenar_por_insercao(estado["fila_pouso"], chave_de_ordenacao)
-    estado["area_ocupada"] = False
+    estado["area_ocupada"] = evento["area_anterior"]
     return desempilhar(estado["historico_eventos"])
 
 
@@ -266,8 +266,8 @@ Funções previstas (nomes sugeridos).
 # ============================================================
 # FUNÇÃO: combust_rest
 # Solicita o combustível restante e classifica sua condição.
-# Verde: acima de 40%.
-# Amarelo: de 30% até 40%.
+# Verde: 40% ou mais.
+# Amarelo: de 30% até menos de 40%.
 # Vermelho: abaixo de 30%.
 # ============================================================
 
@@ -298,8 +298,8 @@ def integ_sens(padrao=None):
 # ============================================================
 # FUNÇÃO: veloc_vent
 # Solicita a velocidade do vento em m/s e classifica o risco.
-# Verde: até 7 m/s.
-# Amarelo: acima de 7 até 15 m/s.
+# Verde: até 8 m/s.
+# Amarelo: acima de 8 até 15 m/s.
 # Vermelho: acima de 15 m/s.
 # ============================================================
 
@@ -619,17 +619,19 @@ def mostrar_modulos(modulos):
 
     for modulo in modulos:
         linha = [
-            modulo.get("nome", modulo.get("tipo", modulo.get("id", ""))),
+            modulo.get("nome", modulo.get("id", "")),
+            modulo.get("tipo", ""),
             modulo["prioridade"],
-            modulo["combustivel"],
-            modulo["massa"] * 1000 if "id" in modulo else modulo["massa"],
+            f"{modulo['combustivel']:.2f}",
+            f"{modulo['massa'] * 1000 if 'id' in modulo else modulo['massa']:.0f}",
             modulo["criticidade"],
             modulo["chegada"]
         ]
         tabela.append(linha)
 
     cabecalho = [
-        "Nome",
+        "ID",
+        "Tipo",
         "Prioridade",
         "Combustível (%)",
         "Massa (kg)",
