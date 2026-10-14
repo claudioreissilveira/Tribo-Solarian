@@ -1,4 +1,4 @@
-# 🚀 MISSÃO AURORA SIGER — MGPEB 🚀
+# 🚀 MISSÃO AURORA SIGER — MGPEB SLR-33 🌌
 
 ## Relatório de Pouso e Estabilização de Base
 
