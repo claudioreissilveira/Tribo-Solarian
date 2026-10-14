@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3200" height="1380" viewBox="0 0 3200 1380" role="img" aria-labelledby="title desc">
+  <title id="title">MGPEB | Estruturas lineares do pouso</title>
+  <desc id="desc">Fila fila_pouso, listas pousados, espera e alerta e pilha historico_eventos, com o estado real antes e depois da rodada 1 do cenário calmo no modo determinístico.</desc>
+  <defs>
+    <style>
+      .bg{fill:#f8fafc}.line{stroke:#526070;stroke-width:3;fill:none}.wire{stroke:#172033;stroke-width:3;fill:none}.dashwire{stroke:#526070;stroke-width:3;fill:none;stroke-dasharray:12 8}.node{fill:#fff;stroke:#526070;stroke-width:2}.process{fill:#f1f5f9}.variable{fill:#e8f3fb;stroke:#5b7890;stroke-width:2}.signal{fill:#fff;stroke:#5b7890;stroke-width:2}.compar{fill:#fff4cf;stroke:#9a7a2d;stroke-width:2}.decision-neutral{fill:#e8f3fb;stroke:#418ac0;stroke-width:2.5}.decision-critical{fill:#f9d9dc;stroke:#a95059;stroke-width:2.5}.decision-postpone{fill:#fde3c8;stroke:#b36b24;stroke-width:2.5}.decision-warning{fill:#fff0bf;stroke:#a8842e;stroke-width:2.5}.abort{fill:#dc493f;stroke:#9f2923;stroke-width:2}.postpone{fill:#f08a24;stroke:#a8560f;stroke-width:2}.warning{fill:#f4bf16;stroke:#9a7410;stroke-width:2}.safe{fill:#36c875;stroke:#187c46;stroke-width:2}.neutral{fill:#cfe3f3;stroke:#418ac0;stroke-width:2}.terminal{fill:#172033;stroke:#172033;stroke-width:2}.group{fill:#f3f8fc;stroke:#418ac0;stroke-width:2.5;stroke-dasharray:10 8}.opgroup{fill:#faf8fd;stroke:#7454b0;stroke-width:2.5;stroke-dasharray:10 8}.opnode{fill:#f4f0fb;stroke:#7454b0;stroke-width:2}.panel{fill:#fff;stroke:#526070;stroke-width:2}.gate{fill:#fff;stroke:#172033;stroke-width:3}.dot{fill:#172033}.cell{fill:#fff;stroke:#5b7890;stroke-width:2}.cellhead{fill:#dfe7ef;stroke:#5b7890;stroke-width:2}.rowgreen{fill:#d9f5e4}.rowyellow{fill:#fdf1c4}.rowred{fill:#f9d9dc}.roworange{fill:#fde3c8}.title{font:500 30px Arial,sans-serif;fill:#172033;text-anchor:middle}.label{font:500 22px Arial,sans-serif;fill:#172033;text-anchor:middle}.small{font:400 18px Arial,sans-serif;fill:#172033;text-anchor:middle}.tiny{font:400 16px Arial,sans-serif;fill:#172033;text-anchor:middle}.mono{font:600 20px Consolas,'Courier New',monospace;fill:#172033;text-anchor:middle}.monosmall{font:400 17px Consolas,'Courier New',monospace;fill:#172033;text-anchor:middle}.white{fill:#fff}.blue{fill:#287bb4}.purple{fill:#7454b0}.muted{fill:#526070}.start{text-anchor:start}.end{text-anchor:end}.bold{font-weight:700}.branch{font:500 18px Arial,sans-serif;fill:#39495a}.ov{text-decoration:overline}
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 0 10 5 0 10z" fill="#526070"/></marker>
+  </defs>
+  <rect class="bg" width="3200" height="1380"/>
+  <text x="1600" y="52" class="title">MGPEB  |  Estruturas lineares: fila, listas e pilha  (item 1 e Anexo)</text>
+  <text x="1600" y="84" class="small">Equipe Tribo Solarian, missão Aurora Siger  |  estado real da rodada 1, cenário calmo, modo determinístico</text>
+  <text x="140" y="200" class="label start blue">fila_pouso  (fila, FIFO)  |  antes da rodada 1, ordenada por inserção (prioridade e horário de chegada)</text>
+  <rect x="380" y="230" width="170" height="70" rx="0" class="cell"/>
+  <text x="465.0" y="272.2" class="mono">ENE-01</text>
+  <rect x="550" y="230" width="170" height="70" rx="0" class="cell"/>
+  <text x="635.0" y="272.2" class="mono">MED-01</text>
+  <rect x="720" y="230" width="170" height="70" rx="0" class="cell"/>
+  <text x="805.0" y="272.2" class="mono">HAB-01</text>
+  <rect x="890" y="230" width="170" height="70" rx="0" class="cell"/>
+  <text x="975.0" y="272.2" class="mono">LOG-01</text>
+  <rect x="1060" y="230" width="170" height="70" rx="0" class="cell"/>
+  <text x="1145.0" y="272.2" class="mono">LAB-01</text>
+  <path d="M380 265H200" class="line" marker-end="url(#arrow)"/>
+  <text x="140" y="330" class="small start">saída: sempre o primeiro</text>
+  <text x="140" y="354" class="monosmall start">ver_topo(fila)</text>
+  <path d="M1410 265H1240" class="line" marker-end="url(#arrow)"/>
+  <text x="1260" y="330" class="small start">entrada: enfileirar</text>
+  <text x="1260" y="354" class="monosmall start">fila.append(módulo)</text>
+  <rect x="100" y="700" width="170" height="70" rx="0" class="cell"/>
+  <text x="185.0" y="742.2" class="mono">ENE-01</text>
+  <text x="100" y="800" class="label start">pousados  (lista)</text>
+  <rect x="420" y="700" width="170" height="70" rx="0" class="cell"/>
+  <text x="505.0" y="742.2" class="mono">MED-01</text>
+  <rect x="590" y="700" width="170" height="70" rx="0" class="cell"/>
+  <text x="675.0" y="742.2" class="mono">HAB-01</text>
+  <rect x="760" y="700" width="170" height="70" rx="0" class="cell"/>
+  <text x="845.0" y="742.2" class="mono">LOG-01</text>
+  <rect x="930" y="700" width="170" height="70" rx="0" class="cell"/>
+  <text x="1015.0" y="742.2" class="mono">LAB-01</text>
+  <text x="420" y="800" class="label start">espera  (lista)</text>
+  <rect x="1250" y="700" width="200" height="70" rx="0" class="cell"/>
+  <text x="1350.0" y="741.5" class="small muted">vazia</text>
+  <text x="1250" y="800" class="label start">alerta  (lista)</text>
+  <path d="M465 300V420H185V700" class="line" marker-end="url(#arrow)"/>
+  <text x="200" y="460" class="small start">POUSO AUTORIZADO</text>
+  <text x="200" y="484" class="small start">ou COM ATENÇÃO</text>
+  <path d="M635 300V520H505V700" class="line" marker-end="url(#arrow)"/>
+  <text x="520" y="560" class="small start">POUSO ADIADO</text>
+  <path d="M1145 300V600H1350V700" class="line" marker-end="url(#arrow)"/>
+  <text x="1365" y="640" class="small start">ALERTA</text>
+  <text x="1500" y="470" class="small start muted">mover_modulo tira o módulo da fila</text>
+  <text x="1500" y="494" class="small start muted">e o põe na lista de destino</text>
+  <path d="M845 770V840H1460V265H1410" class="dashwire"/>
+  <path d="M1450 735H1460" class="dashwire"/>
+  <text x="865" y="875" class="small start">RETORNO À FILA: no início da rodada seguinte a espera volta para a fila</text>
+  <text x="1480" y="730" class="small start">ALERTA LIBERADO</text>
+  <text x="1480" y="754" class="small start">opção 6, com confirmação</text>
+  <text x="100" y="940" class="label start purple">Depois da rodada 1 a fila_pouso fica vazia: cada módulo está em uma única lista.</text>
+  <text x="2330" y="200" class="label start blue">historico_eventos  (pilha, LIFO)</text>
+  <rect x="2330" y="260" width="560" height="100" rx="0" class="cell"/>
+  <text x="2610.0" y="304.8" class="mono">LAB-01 → espera</text>
+  <text x="2610.0" y="330.3" class="small">POUSO ADIADO</text>
+  <rect x="2330" y="360" width="560" height="100" rx="0" class="cell"/>
+  <text x="2610.0" y="404.8" class="mono">LOG-01 → espera</text>
+  <text x="2610.0" y="430.3" class="small">POUSO ADIADO</text>
+  <rect x="2330" y="460" width="560" height="100" rx="0" class="cell"/>
+  <text x="2610.0" y="504.8" class="mono">HAB-01 → espera</text>
+  <text x="2610.0" y="530.3" class="small">POUSO ADIADO</text>
+  <rect x="2330" y="560" width="560" height="100" rx="0" class="cell"/>
+  <text x="2610.0" y="604.8" class="mono">MED-01 → espera</text>
+  <text x="2610.0" y="630.3" class="small">POUSO ADIADO</text>
+  <rect x="2330" y="660" width="560" height="100" rx="0" class="cell"/>
+  <text x="2610.0" y="704.8" class="mono">ENE-01 → pousados</text>
+  <text x="2610.0" y="730.3" class="small">POUSO AUTORIZADO</text>
+  <text x="2910" y="300" class="label start">← topo</text>
+  <text x="2910" y="328" class="small start">último evento</text>
+  <text x="2910" y="742" class="label start">← base</text>
+  <text x="2910" y="770" class="small start">primeiro evento</text>
+  <path d="M2220 290H2320" class="line" marker-end="url(#arrow)"/>
+  <text x="1990" y="280" class="small start">empilhar</text>
+  <text x="1990" y="304" class="monosmall start">pilha.append(evento)</text>
+  <path d="M2320 380H2220" class="line" marker-end="url(#arrow)"/>
+  <text x="1990" y="370" class="small start">desempilhar</text>
+  <text x="1990" y="394" class="monosmall start">pilha.pop()</text>
+  <text x="2330" y="840" class="small start">Cada movimento da rodada empilha um evento.</text>
+  <text x="2330" y="866" class="small start">O desfazer sempre começa pelo topo.</text>
+  <rect x="60" y="1010" width="3080" height="330" rx="14" class="panel"/>
+  <text x="100" y="1060" class="label start">Como cada estrutura é usada</text>
+  <text x="100" y="1112" class="small start">fila_pouso: módulos aguardando autorização; o primeiro da fila (ver_topo) é sempre o próximo avaliado e sai pela mover_modulo.</text>
+  <text x="100" y="1156" class="small start">pousados, espera e alerta: listas auxiliares pedidas no enunciado; cada módulo está em uma única estrutura por vez.</text>
+  <text x="100" y="1200" class="small start">historico_eventos: cada movimento empilha um evento com rodada, módulo, origem, destino, decisão, motivos e o estado da área.</text>
+  <text x="100" y="1244" class="small start">desfazer_ultimo_evento: tira o topo da pilha, devolve o módulo à fila_pouso, reordena a fila e restaura area_ocupada.</text>
+  <text x="100" y="1288" class="small start">cadastro: lista com os 5 módulos; uma cópia ordenada por id permite a busca binária (busca_binaria_por_id).</text>
+</svg>

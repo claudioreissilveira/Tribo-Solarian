@@ -1,4 +1,4 @@
-# 🚀 MISSÃO AURORA SIGER — MGPEB SLR-33 🌌
+# 🚀 MISSÃO AURORA SIGER | MGPEB SLR-33 🌌
 
 ## Relatório de Pouso e Estabilização de Base
 
@@ -133,7 +133,7 @@ O programa apresenta uma decisão por módulo, acompanhada das classificações 
 
 ### Teste de Validação dos Modelos
 
-O script inclui a função `exemplos_de_execucao()` com casos reproduzíveis de ambiente calmo, moderado, tempestade, sensores em alerta e demonstração de ordenação e busca.
+O script inclui a função `exemplos_de_execucao()`, acessível pela opção 7 do menu, com casos reproduzíveis de ambiente calmo, moderado, tempestade, sensores em alerta e demonstração de ordenação e busca.
 
 No modo determinístico e com os módulos padrão:
 
@@ -310,10 +310,11 @@ O combustível do ENE-01 pode variar de 28% a 52%, cruzando as três classifica�
 | 1 | Executar a próxima rodada, informando a disponibilidade da área |
 | 2 | Mostrar as estruturas e o último evento |
 | 3 | Buscar módulo por combustível, prioridade, tipo ou ID |
-| 4 | Comparar ordenações e analisar os módulos da fila |
+| 4 | Comparar ordenações e analisar os módulos |
 | 5 | Editar um módulo ou trocar o cenário |
 | 6 | Desfazer o último evento ou liberar um módulo em alerta |
-| 7 | Sair |
+| 7 | Rodar os exemplos de execução |
+| 8 | Sair |
 
 O menu e a confirmação de área livre aparecem no registro de execução:
 
