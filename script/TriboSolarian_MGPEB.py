@@ -10,6 +10,9 @@ citadas (seção 2, seção 6 e assim por diante) são as do material de apoio,
 do projeto. Os diagramas das portas lógicas e os fluxogramas ficam na pasta `fluxograma/` e a
 modelagem das funções na pasta `modelagem/`. 
 
+###### **Repositório do projeto:**\n",
+    "<https://github.com/claudioreissilveira/Tribo-Solarian/tree/pouso>\n"
+
 ## Integrantes
 - Cláudio Roberto Grillo Reis Silveira | RM575353
 - Vitor Lima Montiel | RM575458
