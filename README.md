@@ -8,6 +8,10 @@ O sistema recebe dados manuais, simula leituras de combustível, integridade dos
 
 O projeto é uma simulação acadêmica. Seus limiares são valores de projeto descritos no [material de apoio](docs/MGPEB_material_apoio.docx), e os modelos matemáticos representam aproximações para estudo.
 
+A nave-mãe Aurora Siger permanece em órbita, comanda a operação e fica fora da fila. Os cinco módulos se desacoplam e descem individualmente para estabelecer a infraestrutura da base. O cenário adotado pela equipe considera gravidade de 3,73 m/s², pressão de 0,636 kPa, atmosfera com 95,1% de CO₂, temperatura média de −59 °C e sol marciano de aproximadamente 24,66 horas. Esses dados contextualizam a missão; o protótipo não simula diretamente todos esses fatores.
+
+O atraso de comunicação entre a Terra e Marte motiva o uso de decisões locais por regras fixas. No protótipo, o operador fornece os dados e participa dos controles críticos, enquanto o programa avalia as condições e registra os motivos das decisões.
+
 ---
 
 ## :dart: Objetivo do Projeto
@@ -41,6 +45,24 @@ As condições são divididas em três estados, sempre apresentados por escrito:
 
 As regras têm ordem de prioridade: falha nos sensores, impedimentos de pouso, condições de atenção e condições nominais. A prioridade dos módulos vai de 1 a 5, sendo 1 a mais urgente; empates são resolvidos pelo horário de chegada.
 
+A contextualização histórica da equipe relaciona três marcos às escolhas de projeto: o ENIAC representa a evolução das máquinas programáveis; o Apollo Guidance Computer (AGC), o atendimento de tarefas essenciais por prioridade; e o RAD750 utilizado na Curiosity, a necessidade de computadores resistentes ao ambiente espacial. O tratamento das sobrecargas do AGC na Apollo 11 inspira, de forma didática, a priorização das tarefas do MGPEB.
+
+Essas referências orientam um programa com listas, dicionários e regras verificáveis. A disponibilidade de energia motiva a prioridade do ENE-01, enquanto a importância do atendimento à tripulação justifica a prioridade do MED-01. O histórico permite acompanhar as decisões e sustenta a discussão de transparência no trabalho da equipe.
+
+O programa tem arquitetura procedural em arquivo único, organizada nas mesmas dez partes do script:
+
+| Parte | Responsabilidade |
+| --- | --- |
+| 0 e 1 | Bibliotecas, constantes, limiares, cenários e padrões |
+| 2 | Dicionários dos módulos, estado da simulação e estruturas lineares |
+| 3 | Entrada manual e validação |
+| 4 | Leituras simuladas com média e oscilação |
+| 5 | Classificação, booleanos e decisão de pouso |
+| 6 | Ordenação e buscas |
+| 7 | Modelos matemáticos de descida, combustível e energia |
+| 8 | Rodadas e menu principal |
+| 9 | Exemplos de execução reproduzíveis |
+
 ---
 
 ## :gear: Processo de funcionamento
@@ -58,6 +80,19 @@ O operador escolhe o cenário, o modo de simulação e os dados dos cinco módul
 - **Cadastro:** ID, tipo, massa final em toneladas, prioridade, criticidade, horário e médias e oscilações das leituras.
 - **Padrões:** o valor entre colchetes é aceito ao pressionar Enter sem digitar.
 
+Os cenários utilizam os seguintes valores de média ± oscilação:
+
+| Cenário | Vento (m/s) | Poeira (τ) |
+| --- | --- | --- |
+| Calmo | 5 ± 3 | 0,5 ± 0,3 |
+| Moderado | 11 ± 4 | 2,0 ± 0,8 |
+| Tempestade | 22 ± 6 | 4,5 ± 1,0 |
+| Personalizado | Definido pelo operador | Definido pelo operador |
+
+O registro fornecido pela equipe mostra a escolha do cenário e do modo, seguida pelo cadastro dos módulos:
+
+![Escolha do cenário, modo de execução e cadastro dos cinco módulos](testes/cadastro_cenarios.png)
+
 #### 2. Validação
 
 As perguntas se repetem até receberem um valor válido. O programa aceita vírgula ou ponto nos decimais, exige percentuais entre 0 e 100, massa positiva, oscilação não negativa, prioridade inteira de 1 a 5, horário HH:MM e IDs únicos de até 10 caracteres. Valores numéricos não finitos são rejeitados.
@@ -71,6 +106,12 @@ As leituras são comparadas com os limiares apresentados na seção de telemetri
 No início da rodada, módulos em espera retornam à fila. A fila é ordenada por prioridade e chegada. Se o primeiro módulo for bloqueado, o próximo é avaliado. Após uma autorização, a área fica ocupada para os demais módulos daquela rodada.
 
 Módulos em alerta só retornam à fila após confirmação do operador e têm seus sensores reavaliados. Cada movimentação é registrada na pilha de eventos.
+
+O fluxo apresentado no documento de arquitetura resume essa movimentação:
+
+![Fluxo de uma rodada, com destinos alerta, espera e pousados](testes/fluxo_rodada.png)
+
+A poeira e as partículas levantadas pelos retrofoguetes motivam o tratamento da área como ocupada durante uma descida. A checagem da área e a confirmação para liberar alertas mantêm o operador no ciclo de decisão.
 
 #### 5. Diagnóstico final
 
@@ -103,6 +144,14 @@ No modo determinístico e com os módulos padrão:
 | Tempestade | 22 | 4,5 | Todos adiados por vento e poeira |
 
 Para testar um módulo bloqueado no topo, altere a média de combustível do ENE-01 para 20%. No cenário moderado, ele será adiado e o MED-01 poderá pousar com atenção. Corrigir a média para 40% permite nova avaliação na rodada seguinte.
+
+Os prints enviados pela equipe registram outra condição: cenário calmo no modo demonstração, com oscilação. Nessa execução, o ENE-01 apresenta combustível de 34,60% e sensores de 94,34%, recebendo **POUSO AUTORIZADO COM ATENÇÃO** por combustível amarelo. Os módulos seguintes são adiados pela área ocupada. Esse resultado é compatível com a simulação e difere do caso determinístico da tabela, no qual o combustível permanece em 40%.
+
+![Decisões para ENE-01, MED-01 e habitação na rodada registrada](testes/rodada_pouso_1.png)
+
+O complemento da rodada apresenta os módulos de logística e laboratório, além dos resultados matemáticos:
+
+![Continuação da rodada e resultados dos modelos matemáticos](testes/rodada_pouso_2.png)
 
 ---
 
@@ -151,6 +200,8 @@ Para testar um módulo bloqueado no topo, altere a média de combustível do ENE
 
 A autorização combina combustível, vento e poeira sem classificação vermelha, área livre e sensores sem erro. A atenção é identificada quando qualquer uma das quatro leituras está amarela. O terminal apresenta os valores, as classificações escritas e os motivos da decisão.
 
+Os limiares são escolhas didáticas apoiadas nas missões discutidas nos documentos da equipe. Curiosity e Perseverance contextualizam a descida propulsiva e a autonomia; Viking, Pathfinder, InSight e Phoenix, as condições de vento e poeira; a tempestade de 2018, os riscos de elevada opacidade; e Surveyor 3/Apollo 12, a projeção de partículas durante um pouso. Essa relação não equivale à certificação dos limiares para uso operacional.
+
 ---
 
 ## Análise por regras e modelos matemáticos
@@ -167,6 +218,22 @@ Com os valores padrão, o tempo de frenagem é de 36 segundos e a altura de acio
 
 O gerenciamento usa fila de pouso, listas de pousados, espera e alerta, além de uma pilha de eventos. A ordenação por inserção organiza a fila; a seleção permite comparação. As buscas sequenciais localizam menor combustível, maior prioridade e tipo de módulo; a busca binária consulta IDs em um cadastro ordenado.
 
+| Estrutura | Papel na simulação |
+| --- | --- |
+| `fila_pouso` | Atendimento pelo início da fila após ordenação por prioridade e chegada |
+| `pousados` | Módulos autorizados que concluíram a etapa simulada de pouso |
+| `espera` | Módulos adiados que serão reavaliados na próxima rodada |
+| `alerta` | Módulos que exigem confirmação do operador para retornar à fila |
+| `historico_eventos` | Pilha LIFO de movimentações, decisões e motivos |
+
+Cada evento registra rodada, ID do módulo, origem, destino, posição, decisão, motivos e estado anterior da área. Na implementação atual, desfazer devolve o módulo à fila, reordena o atendimento e libera a área de pouso.
+
+A opção de estado permite observar os destinos após uma rodada:
+
+![Estado das estruturas após o pouso do módulo de energia](testes/estado_modulos.png)
+
+O modelo energético também mostra a influência da poeira: para τ = 3, o pico calculado cai para aproximadamente 0,86 kW. Já o print da rodada registra 13,95 kW e 114,65 kWh/sol, pois usa a poeira sorteada daquela execução, em vez do valor fixo τ = 0,5 empregado na referência acima.
+
 ---
 
 ## Tecnologias utilizadas
@@ -176,6 +243,10 @@ O gerenciamento usa fila de pouso, listas de pousados, espera e alerta, além de
 - `math`, para cálculos exponenciais e validação numérica;
 - entrada e saída no terminal com `input` e `print`;
 - Git e GitHub, para versionamento e colaboração.
+
+A opção por biblioteca padrão, estruturas pequenas e algoritmos explícitos permite estudar as restrições de memória, processamento e energia descritas na contextualização arquitetural. A fila é ordenada a cada rodada na implementação atual. Validações e regras simples ajudam a verificar o protótipo; a resistência à radiação e às temperaturas de Marte é uma exigência de hardware apresentada como contexto do trabalho.
+
+As fontes discutidas pela equipe incluem NASA Mars Fact Sheet, o estudo de Way et al. sobre a descida da MSL (2006), materiais NASA/JPL sobre Curiosity e Perseverance, o estudo de Paton, Harri e Savijärvi sobre ventos (2018), a publicação da DLR sobre energia da InSight (2022) e NASA Computers in Spaceflight. O documento histórico indica que algumas especificações de computadores e o intervalo de atraso de comunicação ainda precisam ser conferidos em fonte oficial antes da entrega acadêmica.
 
 ---
 
@@ -220,6 +291,18 @@ python script/TriboSolarian_MGPEB.py
 | LOG-01 | Logística | 11,0 | 3 | Baixa | 06:05 |
 | MED-01 | Suporte médico | 4,5 | 1 | Vital | 07:00 |
 
+As médias e oscilações padrão das leituras são:
+
+| ID | Combustível (%) | Sensores (%) |
+| --- | --- | --- |
+| HAB-01 | 70 ± 10 | 95 ± 3 |
+| ENE-01 | 40 ± 12 | 96 ± 3 |
+| LAB-01 | 65 ± 10 | 92 ± 4 |
+| LOG-01 | 80 ± 8 | 94 ± 4 |
+| MED-01 | 55 ± 10 | 97 ± 2 |
+
+O combustível do ENE-01 pode variar de 28% a 52%, cruzando as três classificações. Os sensores do LAB-01 podem variar de 88% a 96%, alternando entre amarelo e verde. Esses intervalos permitem observar mudanças de decisão entre rodadas nos modos com oscilação.
+
 5. Use o menu para operar a simulação:
 
 | Opção | Operação |
@@ -231,6 +314,26 @@ python script/TriboSolarian_MGPEB.py
 | 5 | Editar um módulo ou trocar o cenário |
 | 6 | Desfazer o último evento ou liberar um módulo em alerta |
 | 7 | Sair |
+
+O menu e a confirmação de área livre aparecem no registro de execução:
+
+![Menu principal e confirmação da disponibilidade da área](testes/menu_principal.png)
+
+**Busca de módulo — opção 3.** O exemplo consulta o ID `HAB`, usado no cadastro daquela execução. Ao usar os padrões do projeto, informe `HAB-01`.
+
+![Consulta de módulo por ID](testes/busca_modulo.png)
+
+**Comparação de ordenações — opção 4.** O print apresenta listas vazias porque, após a rodada, os módulos já foram encaminhados para pousados ou espera. Para observar a ordem dos cinco módulos, execute essa opção antes da primeira rodada.
+
+![Comparação por inserção e seleção com fila vazia](testes/ordenacao_modulos.png)
+
+**Edição — opção 5.** O operador pode alterar os dados de um módulo ou trocar o cenário. O exemplo registra a edição do módulo de habitação, mantendo os padrões por Enter.
+
+![Edição dos atributos e leituras do módulo de habitação](testes/edicao_modulo.png)
+
+**Desfazer ou liberar alerta — opção 6.** O registro mostra o evento de adiamento do LAB-01 retirado do histórico pela ação desfazer. O print demonstra desfazer; a liberação de alerta é outra ação disponível no mesmo menu e exige confirmação.
+
+![Último evento devolvido pela operação desfazer](testes/desfazer_evento.png)
 
 ### Resultado esperado
 
@@ -244,5 +347,9 @@ Os resultados possíveis são:
 - 🟡 **POUSO AUTORIZADO COM ATENÇÃO**;
 - 🔴 **POUSO ADIADO**;
 - 🔴 **ALERTA**.
+
+Ao selecionar a opção 7, a aplicação encerra a simulação, como no registro da equipe:
+
+![Encerramento da simulação pela opção 7](testes/encerramento.png)
 
 ---
