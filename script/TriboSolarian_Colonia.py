@@ -59,6 +59,8 @@ Cada integrante acrescenta apenas o que sua contribuição realmente utiliza.
 """
 
 # Bloco 1 — Montiel: iniciar aqui os imports e a configuração comum.
+
+import math  # math.isfinite confere se um número não é NaN nem infinito
 # Blocos 2 a 5 — Souza, Cláudio, Wallace e Thales: complementar este mesmo local.
 
 
@@ -76,6 +78,35 @@ e dados modelados devem continuar identificados; não duplicar uma mesma carga.
 
 # Bloco 1 — Montiel: inserir aqui contexto, parâmetros solares e cargas comuns.
 
+# Contexto comum (seção 1): todos os balanços usam a mesma população e janela.
+POPULACAO_PADRAO = 50   # pessoas (P), editável pelo operador
+PERIODO_H = 24          # horas terrestres (P); não é um sol marciano (24,6597 h)
+
+# Convenção: a unidade fica no nome do campo
+#   _kw = quilowatt, _kwh = quilowatt-hora, _h = horas
+# Origem dos valores: R = referência publicada, P = parâmetro de projeto,
+# M = dado modelado (seção 2 do apoio).
+
+# Energia solar (seção 3.1)
+SOLAR_PADRAO = {
+    "pot_solar_kw": 120,   # P: potência elétrica de referência
+    "horas_solares": 8,    # P: horas equivalentes em 24 h (não é a duração do dia)
+    "fator_solar": 1.00,   # P: de 0 a 1; já inclui a perda adotada, usar uma vez só
+}
+
+# Carga comum da energia (seção 5): controle e distribuição, protegida nas 24 h.
+# Campos iguais aos de qualquer operação (seção 5.2).
+CARGA_AUXILIARES = {
+    "id": "AUX",
+    "nome": "Auxiliares de energia",
+    "pot_normal_kw": 2,          # P
+    "minimo_protegido_kw": 2,    # P: essencial, não é reduzida
+    "periodo_h": 24,
+}
+
+# Faixas da cobertura elétrica (seção 3.3), P
+LIMIAR_COBERTURA_VERDE = 1.10    # cobertura >= 1,10
+LIMIAR_COBERTURA_AMARELO = 1.00  # 1,00 <= cobertura < 1,10
 
 # Bloco 2 — Souza: inserir aqui parâmetros eólicos e pares para a regressão.
 
@@ -103,6 +134,49 @@ Parte 7, classificações na Parte 5 e interação com o usuário nas Partes 3 e
 
 # Bloco 1 — Montiel: implementar aqui a estrutura comum e o acesso à hierarquia.
 
+def criar_colonia(populacao=POPULACAO_PADRAO):
+    """Cria a estrutura comum da colônia em dicionários aninhados.
+
+    sistema -> subsistema -> campos. Os grupos vazios são preenchidos
+    pelos blocos seguintes, sem criar outra estrutura.
+    """
+    colonia = {
+        "contexto": {
+            "cenario": "NORMAL",
+            "populacao": populacao,
+            "periodo_h": PERIODO_H,
+        },
+        "energia": {
+            "solar": dict(SOLAR_PADRAO),          # cópia: editar não muda o padrão
+            "eolica": {},                         # Bloco 2
+            "auxiliares": dict(CARGA_AUXILIARES),
+        },
+        "suporte_vida": {
+            "oxigenio": {},                       # Bloco 3
+            "alimentos": {},                      # Bloco 3
+        },
+        "operacoes": [],                          # Bloco 4: lista de registros
+        "clima": {},                              # Bloco 5
+        "riscos": [],                             # Bloco 5
+    }
+    return colonia
+
+
+def listar_cargas(colonia):
+    """Junta numa lista todas as cargas elétricas cadastradas, cada uma uma vez.
+
+    Cada carga fica guardada em um só lugar da hierarquia:
+      - auxiliares em energia;
+      - suporte de O2 e de alimentos em suporte_vida, na chave "carga";
+      - operações complementares na lista operacoes.
+    """
+    cargas = [colonia["energia"]["auxiliares"]]
+    for recurso in colonia["suporte_vida"].values():
+        if "carga" in recurso:
+            cargas.append(recurso["carga"])
+    for operacao in colonia["operacoes"]:
+        cargas.append(operacao)
+    return cargas
 
 # Bloco 2 — Souza: acrescentar aqui as estruturas dos dados e pares eólicos.
 
@@ -160,6 +234,45 @@ a prioridade das operações, tratada separadamente na Parte 6.
 
 # Bloco 1 — Montiel: implementar aqui classificação e diagnóstico energético.
 
+def classificar_cobertura(cobertura):
+    """Classifica a cobertura elétrica (seção 3.3), por escrito.
+
+    VERDE: >= 1,10 | AMARELO: 1,00 a 1,10 | VERMELHO: < 1,00
+    Cobertura None (consumo zero) -> NAO SE APLICA.
+    """
+    if cobertura is None:
+        return "NAO SE APLICA"
+    # round evita erro de arredondamento do computador:
+    # 950,4 / 864 deveria dar 1,10, mas o Python calcula 1,0999999999999999
+    cobertura = round(cobertura, 6)
+    if cobertura >= LIMIAR_COBERTURA_VERDE:
+        return "VERDE"
+    elif cobertura >= LIMIAR_COBERTURA_AMARELO:
+        return "AMARELO"
+    else:
+        return "VERMELHO"
+
+
+def diagnostico_energetico(balanco):
+    """Monta o texto do diagnóstico: saldo sempre junto da classificação."""
+    leituras = {
+        "VERDE": "margem de geração no período",
+        "AMARELO": "atendimento com margem pequena; atenção à continuidade",
+        "VERMELHO": "déficit no período; há demanda não atendida no balanço",
+        "NAO SE APLICA": "consumo informado igual a zero; cobertura não calculada",
+    }
+    classe = balanco["classificacao"]
+    linhas = [
+        f"Geração total: {balanco['geracao_total_kwh']:.2f} kWh",
+        f"Consumo total: {balanco['consumo_total_kwh']:.2f} kWh",
+        f"Saldo:         {balanco['saldo_kwh']:+.2f} kWh",
+    ]
+    if balanco["cobertura"] is None:
+        linhas.append("Cobertura:     não se aplica")
+    else:
+        linhas.append(f"Cobertura:     {balanco['cobertura']:.4f}")
+    linhas.append(f"Energia:       {classe} - {leituras[classe]}")
+    return "\n".join(linhas)
 
 # Bloco 3 — Cláudio: implementar aqui classificações e diagnósticos dos recursos.
 
@@ -199,6 +312,86 @@ as limitações dos dados e as conferências necessárias antes de calcular.
 """
 
 # Bloco 1 — Montiel: implementar aqui geração solar e balanço energético.
+
+def numero_valido(valor, minimo=None, maximo=None):
+    """True se 'valor' é um número finito dentro do intervalo (seção 10.1).
+
+    Recusa texto ("120"), None, True/False, NaN e infinito.
+    True/False são recusados porque o Python trata True como 1.
+    """
+    if type(valor) not in (int, float):
+        return False
+    if not math.isfinite(valor):
+        return False
+    if minimo is not None and valor < minimo:
+        return False
+    if maximo is not None and valor > maximo:
+        return False
+    return True
+
+
+def energia_kwh(potencia_kw, horas):
+    """Energia (kWh) = potência (kW) x tempo (h). None se a entrada for inválida."""
+    if not numero_valido(potencia_kw, minimo=0):
+        return None
+    if not numero_valido(horas, minimo=0, maximo=PERIODO_H):
+        return None
+    return potencia_kw * horas
+
+
+def geracao_solar(pot_solar_kw, horas_solares, fator_solar):
+    """Energia solar do período, em kWh: potência x horas equivalentes x fator.
+
+    O fator solar (0 a 1) já inclui a perda do cenário e é aplicado uma vez.
+    Devolve None se alguma entrada for inválida.
+    """
+    if not numero_valido(fator_solar, minimo=0, maximo=1):
+        return None
+    energia = energia_kwh(pot_solar_kw, horas_solares)
+    if energia is None:
+        return None
+    return energia * fator_solar
+
+
+def balanco_energetico(geracoes, consumos):
+    """Balanço do período a partir das gerações e dos consumos recebidos.
+
+    geracoes: dicionário {fonte: kWh}, ex.: {"solar": 960}
+    consumos: dicionário {carga: kWh}, ex.: {"AUX": 48, "O2": 288}
+    Uma nova fonte (ex.: "eolica") entra como mais uma chave em geracoes,
+    sem mudar esta função.
+
+    Devolve um dicionário com totais, saldo, cobertura e classificação,
+    ou None se algum valor for inválido.
+    """
+    geracao_total = 0
+    for fonte in geracoes:
+        if not numero_valido(geracoes[fonte], minimo=0):
+            return None
+        geracao_total = geracao_total + geracoes[fonte]
+
+    consumo_total = 0
+    for carga in consumos:
+        if not numero_valido(consumos[carga], minimo=0):
+            return None
+        consumo_total = consumo_total + consumos[carga]
+
+    saldo = geracao_total - consumo_total
+
+    # Consumo zero: não divide; a cobertura não se aplica (seção 3.3)
+    if consumo_total == 0:
+        cobertura = None
+    else:
+        cobertura = geracao_total / consumo_total
+
+    return {
+        "geracao_por_fonte_kwh": dict(geracoes),
+        "geracao_total_kwh": geracao_total,
+        "consumo_total_kwh": consumo_total,
+        "saldo_kwh": saldo,
+        "cobertura": cobertura,
+        "classificacao": classificar_cobertura(cobertura),
+    }
 
 
 # Bloco 2 — Souza: implementar aqui geração eólica do período.
@@ -247,6 +440,94 @@ reais no README e no relatório. Não há saídas resolvidas neste roteiro.
 
 # Bloco 1 — Montiel: inserir aqui exemplos da fundação e da parte energética.
 
+def conferir(descricao, obtido, esperado):
+    """Mostra o resultado de uma conferência e devolve True se bateu."""
+    if type(esperado) is float and type(obtido) in (int, float):
+        ok = abs(obtido - esperado) < 0.0001
+    else:
+        ok = obtido == esperado
+    situacao = "OK" if ok else "FALHOU"
+    print(f"  [{situacao}] {descricao}: obtido {obtido!r}, esperado {esperado!r}")
+    return ok
+
+
+def exemplos_bloco1():
+    """Exemplos reproduzíveis da fundação e da parte energética.
+
+    Valores esperados conferidos à mão com o apoio:
+      solar = 120 kW x 8 h x fator (seção 3.1)
+      consumo de referência = 36 kW x 24 h = 864 kWh (seção 5)
+    """
+    resultados = []
+
+    print("=== Bloco 1 | Estrutura comum ===")
+    colonia = criar_colonia()
+    resultados.append(conferir("população padrão", colonia["contexto"]["populacao"], 50))
+    resultados.append(conferir("janela de análise (h)", colonia["contexto"]["periodo_h"], 24))
+    resultados.append(conferir("cargas cadastradas até o Bloco 1",
+                               len(listar_cargas(colonia)), 1))
+    colonia["energia"]["solar"]["pot_solar_kw"] = 1
+    resultados.append(conferir("editar uma colônia não muda o padrão",
+                               SOLAR_PADRAO["pot_solar_kw"], 120))
+
+    print("\n=== Bloco 1 | Geração solar (120 kW, 8 h) ===")
+    resultados.append(conferir("NORMAL, fator 1,00", geracao_solar(120, 8, 1.00), 960.0))
+    resultados.append(conferir("BAIXA_GERACAO, fator 0,80", geracao_solar(120, 8, 0.80), 768.0))
+    resultados.append(conferir("TEMPESTADE, fator 0,10", geracao_solar(120, 8, 0.10), 96.0))
+
+    # Consumos de referência da tabela da seção 5, recebidos como entrada.
+    # Quando os Blocos 3 e 4 existirem, virão de listar_cargas().
+    potencias_referencia_kw = {"AUX": 2, "O2": 12, "ALI": 9,
+                               "ARM": 4, "PES": 4, "MOB": 3, "CON": 2}
+    consumos = {}
+    for carga in potencias_referencia_kw:
+        consumos[carga] = energia_kwh(potencias_referencia_kw[carga], PERIODO_H)
+
+    print("\n=== Bloco 1 | Balanço energético (consumo de referência 864 kWh) ===")
+    casos = [("NORMAL", 1.00, 96.0, "VERDE"),
+             ("BAIXA_GERACAO", 0.80, -96.0, "VERMELHO"),
+             ("TEMPESTADE", 0.10, -768.0, "VERMELHO")]
+    for nome, fator, saldo_esperado, classe_esperada in casos:
+        geracoes = {"solar": geracao_solar(120, 8, fator)}
+        # Ponto de conexão da geração eólica (Bloco 2):
+        # geracoes["eolica"] = <energia eólica do período em kWh>
+        balanco = balanco_energetico(geracoes, consumos)
+        print(f"-- {nome}")
+        print(diagnostico_energetico(balanco))
+        resultados.append(conferir(f"{nome} saldo", balanco["saldo_kwh"], saldo_esperado))
+        resultados.append(conferir(f"{nome} classe", balanco["classificacao"], classe_esperada))
+
+    print("\n=== Bloco 1 | Limites das classificações ===")
+    resultados.append(conferir("cobertura 1,10", classificar_cobertura(1.10), "VERDE"))
+    resultados.append(conferir("cobertura 1,00", classificar_cobertura(1.00), "AMARELO"))
+    resultados.append(conferir("cobertura 0,99", classificar_cobertura(0.99), "VERMELHO"))
+    resultados.append(conferir("950,4 / 864 (= 1,10)",
+                               balanco_energetico({"solar": 950.4}, {"total": 864})["classificacao"],
+                               "VERDE"))
+    margem = balanco_energetico({"solar": 900}, {"total": 864})
+    resultados.append(conferir("900 / 864: saldo positivo com AMARELO",
+                               (margem["saldo_kwh"] > 0, margem["classificacao"]),
+                               (True, "AMARELO")))
+
+    print("\n=== Bloco 1 | Consumo zero ===")
+    zero = balanco_energetico({"solar": 960}, {"total": 0})
+    resultados.append(conferir("cobertura", zero["cobertura"], None))
+    resultados.append(conferir("classificação", zero["classificacao"], "NAO SE APLICA"))
+    resultados.append(conferir("saldo", zero["saldo_kwh"], 960))
+
+    print("\n=== Bloco 1 | Entradas inválidas (devem devolver None) ===")
+    resultados.append(conferir("potência em texto", geracao_solar("120", 8, 1.0), None))
+    resultados.append(conferir("potência True", geracao_solar(True, 8, 1.0), None))
+    resultados.append(conferir("potência NaN", geracao_solar(math.nan, 8, 1.0), None))
+    resultados.append(conferir("potência negativa", geracao_solar(-1, 8, 1.0), None))
+    resultados.append(conferir("fator 1,5", geracao_solar(120, 8, 1.5), None))
+    resultados.append(conferir("25 horas", geracao_solar(120, 25, 1.0), None))
+    resultados.append(conferir("geração negativa no balanço",
+                               balanco_energetico({"solar": -5}, {"total": 864}), None))
+    resultados.append(conferir("consumo infinito no balanço",
+                               balanco_energetico({"solar": 960}, {"total": math.inf}), None))
+
+    print(f"\nBloco 1: {resultados.count(True)} de {len(resultados)} conferências OK.")
 
 # Bloco 2 — Souza: inserir aqui exemplos de eólica, regressão e ligação energética.
 
