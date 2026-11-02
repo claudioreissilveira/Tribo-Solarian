@@ -12,23 +12,6 @@ classifica e recomenda. O programa não opera equipamentos nem altera dados sozi
 > testados. Geração eólica (regressão), oxigênio/alimentos, clima e riscos ainda serão
 > conectados.
 
-## Estrutura
-
-```
-Colonia/
-├── README.md
-├── docs/
-│   ├── Colonia_material_apoio.docx   # documento de apoio (fonte dos parâmetros)
-│   └── REPASSE_SOUZA.md              # entrega para o módulo eólico
-├── script/
-│   ├── dados.py       # base comum: só dados, sem cálculo
-│   ├── validacao.py   # conferência de domínio das entradas
-│   ├── base.py        # monta a colônia hierárquica a partir de um cenário
-│   ├── energia.py     # geração solar, consumos e balanço energético
-│   └── main.py        # demonstração no terminal
-└── testes/
-    └── test_energia.py
-```
 
 ## ⚙️ Como executar
 
