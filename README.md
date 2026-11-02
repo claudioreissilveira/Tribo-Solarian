@@ -1,155 +1,150 @@
 # 🚀 MISSÃO AURORA SIGER | MGPEB SLR-33 🌌
 
-# Colônia — Sistema integrado (Fase 3)
+# Colônia em Marte — Fase 3
 
-Equipe Tribo Solarian · versão **0.1.0** (base comum + energia solar + balanço energético)
+Equipe Tribo Solarian · versão 0.1
 
-Sistema em Python padrão (sem dependências externas) que acompanha os recursos de uma
-colônia de 50 pessoas em Marte numa janela de **24 horas terrestres**: calcula, compara,
-classifica e recomenda. O programa não opera equipamentos nem altera dados sozinho.
-
-> Status desta versão: base de dados, geração solar e balanço energético prontos e
-> testados. Geração eólica (regressão), oxigênio/alimentos, clima e riscos ainda serão
-> conectados.
+Programa em Python que acompanha a energia de uma colônia de 50 pessoas em Marte,
+sempre olhando um período de **24 horas**. Ele calcula quanta energia é gerada, quanta é
+consumida, mostra o saldo e classifica a situação em Verde, Amarelo ou Vermelho.
 
 
-## ⚙️ Como executar
+## Como rodar
 
-Requer Python 3.8 ou superior. A partir da pasta `Colonia`:
+Abra a pasta `Colonia` no VS Code (Arquivo → Abrir Pasta) e, no terminal:
 
 ```bash
-python script/main.py                 # todos os cenários
-python script/main.py TEMPESTADE      # um cenário
-python -m unittest discover -s testes -v
+python script/colonia.py          # mostra o balanço de todos os cenários
+python testes/testar_energia.py   # roda os testes
 ```
 
-### Exemplo de entrada e saída
-
-Entrada: cenário `NORMAL` (120 kW solares, 8 h equivalentes, fator 1,00; cargas normais).
+### Exemplo de saída
 
 ```
-=== Cenário NORMAL | população 50 | janela 24 h ===
-(geração eólica ainda não conectada)
-
--- Cargas em modo normal --
-Geração por fonte:
-  solar            960.00 kWh
-Geração total      960.00 kWh
-Consumo total      864.00 kWh
-Saldo              +96.00 kWh (EXCEDENTE)
-Cobertura          1.1111
-Classificação  VERDE - Margem de geração no período.
-```
-
-Uso das funções diretamente:
-
-```python
-from base import montar_colonia, listar_cargas
-from energia import geracao_solar_kwh, consumos_por_carga, balanco_energetico
-
-colonia  = montar_colonia("BAIXA_GERACAO")
-geracoes = {"solar": geracao_solar_kwh(120, 8, 0.80)}           # 768 kWh
-consumos = consumos_por_carga(listar_cargas(colonia), "normal")  # 864 kWh
-balanco_energetico(geracoes, consumos)
-# saldo -96 kWh, cobertura 0,8889, VERMELHO
+=== Cenário NORMAL ===
+  Geração solar: 960.00 kWh
+  Geração total: 960.00 kWh
+  Consumo total: 864.00 kWh
+  Saldo:         +96.00 kWh
+  Cobertura:     1.1111
+  Classificação: VERDE
 ```
 
 ---
 
-## Organização dos dados
+## Como os dados estão organizados
 
-**Base comum.** Todos os módulos compartilham o mesmo `CONTEXTO`: cenário, população
-(50 pessoas, editável, inteiro positivo) e período de análise (24 h terrestres — não um sol
-marciano de 24,6597 h). Toda grandeza leva a unidade no nome do campo (`pot_solar_kw`,
-`horas_solares`, `estoque_o2_kg`, `vento_ms`, `temperatura_externa_c`), o que evita somar
-potência com energia ou kg de O₂ com kg de alimento.
+O arquivo `colonia.py` é dividido em partes: **dados**, **validação**, **cálculos** e
+**programa principal**.
 
-**Hierarquia.** Os sistemas são dicionários aninhados (sistema → subsistema → campos):
+**Base comum.** Todos os módulos usam a mesma população (50 pessoas) e o mesmo período
+(24 horas terrestres). A unidade de cada valor fica no nome do campo: `pot_solar_kw` está
+em quilowatts, `estoque_kg` em quilos, `vento_ms` em metros por segundo.
 
-| Grupo | Conteúdo | Estrutura |
-|---|---|---|
-| `CONTEXTO` | cenário, população, período | chave-valor |
-| `ENERGIA` → `solar` / `eolica` / `auxiliares` | potências, horas, fatores, disponibilidade; pares de referência da regressão | dicionário aninhado; pares em **lista** de dicionários |
-| `SUPORTE_VIDA` → `oxigenio` / `alimentos` | taxas por pessoa, estoques, entradas e a carga elétrica de cada um | dicionário aninhado |
-| `OPERACOES_COMPLEMENTARES` | armazenamento, pesquisa, mobilidade, conforto | **lista** de registros com os mesmos campos |
-| `CLIMA` | vento, poeira τ, temperatura externa | chave-valor |
-| `CENARIOS` | entradas de NORMAL, BAIXA_GERACAO, TEMPESTADE, SUPORTE_VIDA_EM_ALERTA, MULTIPLAS_RESTRICOES | dicionário de dicionários |
+**Hierarquia dos sistemas.** 
 
-Regra usada: listas para dados repetidos (operações e pares vento/potência), chave-valor
-para atributos, aninhamento para sistemas e subsistemas.
+```
+colonia
+├── contexto        cenário, população, período
+├── energia
+│   ├── solar       potência, horas, fator solar
+│   ├── eolica      vento, disponibilidade, pares vento x potência
+│   └── auxiliares  carga de controle e distribuição
+├── suporte_vida
+│   ├── oxigenio    taxa por pessoa, estoque, reposição, carga elétrica
+│   └── alimentos   taxa por pessoa, estoque, entrada, carga elétrica
+├── operacoes       lista com as 4 operações complementares
+└── clima           vento, poeira, temperatura
+```
 
-**Cada carga elétrica pertence a um único bloco**, para que a consolidação não duplique
-parcelas: auxiliares ficam em `ENERGIA`, o suporte elétrico de O₂ e de alimentos fica em
-`SUPORTE_VIDA` e as quatro complementares ficam em `OPERACOES_COMPLEMENTARES`. A função
-`listar_cargas()` reúne as sete cargas numa lista única, e `consumos_por_carga()` recusa
-identificador repetido. Todo registro de carga tem os mesmos campos: `id`, `nome`,
-`pot_normal_kw`, `minimo_protegido_kw`, `periodo_h` (e `prioridade` nas complementares,
-1 = mais importante).
+Usamos três estruturas:
+- **dicionário** para guardar atributos com nome (`"pot_solar_kw": 120`);
+- **dicionário dentro de dicionário** para sistemas e subsistemas (energia → solar);
+- **lista** para dados que se repetem (as 4 operações e os 5 pares vento × potência).
 
-**Cenários.** `montar_colonia(cenario, populacao)` faz uma cópia profunda da base e grava
-cada campo do cenário no seu lugar da hierarquia, conforme a tabela
-`DESTINO_CAMPOS_CENARIO`. O vento é gravado ao mesmo tempo em `CLIMA` e em
-`ENERGIA.eolica`, para que clima e eólica usem sempre o mesmo valor. `PERSONALIZADO`
-parte do NORMAL. Editar uma colônia montada não altera a base de referência.
+**Cenários.** O dicionário `CENARIOS` guarda os valores que mudam em cada situação
+(NORMAL, BAIXA_GERACAO, TEMPESTADE, SUPORTE_VIDA_EM_ALERTA, MULTIPLAS_RESTRICOES).
+`criar_colonia` pega esses valores e coloca cada um no lugar certo. O vento do cenário vai
+para o clima e para a eólica ao mesmo tempo, para os dois usarem o mesmo valor.
 
-**Origem dos valores.** Os comentários de `dados.py` mantêm a marca do documento de apoio:
-**R** (referência publicada, ex.: O₂ 0,895 kg/pessoa/24 h, R2), **P** (parâmetro de
-projeto, ex.: 120 kW solares, limiares de cobertura) e **M** (dado modelado, ex.: pares
-vento/potência da seção 8).
+**Cargas sem repetição.** Cada carga elétrica está guardada em um lugar só: auxiliares em
+`energia`, suporte de oxigênio e de alimentos em `suporte_vida`, e as outras quatro em
+`operacoes`. A função `listar_cargas` junta as 7 numa lista, então nenhuma é somada duas
+vezes.
 
-## Cálculos energéticos
+## Como a energia é calculada
 
-Relação dimensional: **energia (kWh) = potência (kW) × tempo (h)**.
+Regra básica: **energia (kWh) = potência (kW) × tempo (h)**.
 
-1. **Geração solar** — `geracao_solar_kwh(pot_solar_kw, horas_solares, fator_solar)`
+**1. Geração solar** — `geracao_solar(pot_solar_kw, horas_solares, fator_solar)`
 
-   `E_solar = pot_solar_kw × horas_solares × fator_solar`
+```
+energia solar = potência × horas equivalentes × fator solar
+NORMAL:  120 × 8 × 1,00 = 960 kWh
+```
 
-   As horas solares são horas equivalentes à potência de referência (não a duração do
-   dia). O fator solar (0 a 1) já inclui a perda adotada pelo cenário — poeira inclusive —
-   e é aplicado **uma única vez**; τ não é convertido em fator.
+O fator solar vai de 0 a 1 e já inclui a perda por poeira do cenário, então é usado uma
+vez só.
 
-2. **Consumo** — `consumo_carga_kwh(carga, modo)` e `consumos_por_carga(cargas, modo)`
+**2. Consumo** — `consumo_das_cargas(cargas, modo)`
 
-   `E_carga = potência × periodo_h`, com potência normal (`modo="normal"`) ou mínimo
-   protegido (`modo="minimo"`). No cadastro, a potência normal não pode ser menor que o
-   mínimo protegido.
+Cada carga consome `potência × 24 h`. No modo `"normal"` usa a potência normal; no modo
+`"minimo"` usa o mínimo protegido.
 
-3. **Balanço** — `balanco_energetico(geracoes, consumos)`
+```
+normal: (2 + 12 + 9 + 4 + 4 + 3 + 2) kW × 24 h = 36 × 24 = 864 kWh
+mínimo: (2 + 12 + 9 + 3 + 1 + 1 + 0,5) kW × 24 h = 28,5 × 24 = 684 kWh
+```
 
-   Recebe gerações e consumos como entradas, ambos no formato `{rótulo: kWh}`:
+**3. Balanço** — `balanco_energetico(geracoes, consumos)`
 
-   - `saldo = geração total − consumo total` (EXCEDENTE, DEFICIT ou EQUILIBRIO)
-   - `cobertura = geração total ÷ consumo total`
-   - classificação: **VERDE** se cobertura ≥ 1,10; **AMARELO** se 1,00 ≤ cobertura < 1,10;
-     **VERMELHO** se cobertura < 1,00
-   - consumo total igual a zero → cobertura `None`, classificação `NAO_APLICAVEL` e motivo
-     registrado, sem divisão por zero
+Recebe dois dicionários: as gerações (`{"solar": 960}`) e os consumos. Calcula:
 
-   O saldo é sempre exibido junto da classificação, porque excedente e margem pequena
-   podem coexistir (ex.: 900 kWh gerados para 864 consumidos → saldo +36, AMARELO). Para a
-   comparação com os limiares, a cobertura é arredondada a 9 casas: sem isso,
-   950,4 ÷ 864 (exatamente 1,10) dá 1,0999999999999999 em ponto flutuante e cairia em
-   AMARELO.
+- **saldo** = geração total − consumo total
+- **cobertura** = geração total ÷ consumo total
+- **classificação**:
+  - VERDE: cobertura ≥ 1,10 (sobra pelo menos 10%)
+  - AMARELO: cobertura entre 1,00 e 1,10 (atende, mas com pouca folga)
+  - VERMELHO: cobertura < 1,00 (falta energia)
+- se o consumo for **zero**, não dá para dividir: a cobertura fica `None` e a
+  classificação fica "NAO SE APLICA".
 
-**Valores conferidos com o documento de apoio** (testes automatizados):
+O saldo sempre aparece junto da cor, porque é possível sobrar energia e mesmo assim
+estar no Amarelo (ex.: 900 kWh gerados para 864 consumidos).
 
-| Cenário | Solar (kWh) | Consumo normal (kWh) | Saldo (kWh) | Cobertura | Classe |
+Um detalhe: o computador calcula 950,4 ÷ 864 como 1,0999999999 em vez de 1,10. Por isso a
+cobertura é arredondada com `round(cobertura, 6)` antes de comparar com os limites.
+
+**Resultados conferidos com o documento de apoio** (só energia solar):
+
+| Cenário | Geração | Consumo | Saldo | Cobertura | Classe |
 |---|---:|---:|---:|---:|---|
-| NORMAL | 120×8×1,00 = 960 | 36 kW×24 = 864 | +96 | 1,1111 | VERDE |
-| BAIXA_GERACAO | 120×8×0,80 = 768 | 864 | −96 | 0,8889 | VERMELHO |
-| TEMPESTADE | 120×8×0,10 = 96 | 864 | −768 | 0,1111 | VERMELHO |
+| NORMAL | 960 | 864 | +96 | 1,1111 | VERDE |
+| BAIXA_GERACAO | 768 | 864 | −96 | 0,8889 | VERMELHO |
+| TEMPESTADE | 96 | 864 | −768 | 0,1111 | VERMELHO |
 
-Cargas mínimas protegidas: 28,5 kW × 24 h = 684 kWh. Valores apenas com geração solar; a
-eólica será somada quando o módulo for conectado.
+## Validação das entradas
 
-**Validação das entradas.** Números precisam ser finitos (recusa texto, `None`, `bool`,
-NaN e infinito); potências, horas e parcelas de energia não podem ser negativas; fator
-solar entre 0 e 1; horas dentro da janela de 24 h; disponibilidade eólica somente 0 ou 1;
-população inteira positiva. Entradas inválidas levantam `ValueError` com mensagem em
-português.
+A função `numero_valido` confere cada valor antes de calcular. Ela recusa texto
+(`"120"`), `None`, `True`/`False`, NaN, infinito e números fora do intervalo permitido.
+Quando uma entrada é inválida, as funções de cálculo devolvem `None` em vez de um número
+errado. Regras:
+- potências e energias não podem ser negativas;
+- fator solar entre 0 e 1;
+- horas entre 0 e 24;
+- potência normal de uma carga não pode ser menor que o mínimo protegido.
 
-**Simplificações declaradas.** O balanço é agregado em 24 h: saldo positivo não garante
-energia à noite nem oferta contínua em cada instante (R4). Reserva elétrica (baterias) não
-faz parte do escopo. Estoques, potências e limiares são parâmetros de projeto (P), não
-medições de uma colônia real.
+## Testes
+
+`testes/testar_energia.py` confere: base comum, geração solar, consumo, saldo,
+classificações (inclusive os limites exatos 1,10 e 1,00), consumo zero e entradas
+inválidas. Se algum `assert` falhar, o Python mostra a linha; se tudo der certo, aparece
+"Todos os testes passaram."
+
+## Simplificações
+
+- O balanço soma as 24 horas: saldo positivo não garante energia durante a noite.
+- Baterias (reserva elétrica) não fazem parte do trabalho.
+- Os valores de potência, estoques e limites são parâmetros escolhidos para o exercício,
+  não medições reais.
+
