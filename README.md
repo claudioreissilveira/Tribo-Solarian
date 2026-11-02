@@ -11,31 +11,30 @@ consumida, mostra o saldo e classifica a situação em Verde, Amarelo ou Vermelh
 
 ## Como rodar
 
-Abra a pasta `Colonia` no VS Code (Arquivo → Abrir Pasta) e, no terminal:
+Na pasta do repositório, no terminal:
 
 ```bash
-python script/colonia.py          # mostra o balanço de todos os cenários
-python testes/testar_energia.py   # roda os testes
+python script/TriboSolarian_Colonia.py
 ```
 
 ### Exemplo de saída
 
 ```
-=== Cenário NORMAL ===
-  Geração solar: 960.00 kWh
-  Geração total: 960.00 kWh
-  Consumo total: 864.00 kWh
-  Saldo:         +96.00 kWh
-  Cobertura:     1.1111
-  Classificação: VERDE
+-- NORMAL
+Geração total: 960.00 kWh
+Consumo total: 864.00 kWh
+Saldo:         +96.00 kWh
+Cobertura:     1.1111
+Energia:       VERDE - margem de geração no período
+  [OK] NORMAL saldo: obtido 96.0, esperado 96.0
+  [OK] NORMAL classe: obtido 'VERDE', esperado 'VERDE'
+...
+Bloco 1: 29 de 29 conferências OK.
 ```
 
 ---
 
 ## Como os dados estão organizados
-
-O arquivo `colonia.py` é dividido em partes: **dados**, **validação**, **cálculos** e
-**programa principal**.
 
 **Base comum.** Todos os módulos usam a mesma população (50 pessoas) e o mesmo período
 (24 horas terrestres). A unidade de cada valor fica no nome do campo: `pot_solar_kw` está
@@ -62,15 +61,15 @@ Usamos três estruturas:
 - **dicionário dentro de dicionário** para sistemas e subsistemas (energia → solar);
 - **lista** para dados que se repetem (as 4 operações e os 5 pares vento × potência).
 
-**Cenários.** O dicionário `CENARIOS` guarda os valores que mudam em cada situação
-(NORMAL, BAIXA_GERACAO, TEMPESTADE, SUPORTE_VIDA_EM_ALERTA, MULTIPLAS_RESTRICOES).
-`criar_colonia` pega esses valores e coloca cada um no lugar certo. O vento do cenário vai
-para o clima e para a eólica ao mesmo tempo, para os dois usarem o mesmo valor.
+**Cenários.** Os cenários (NORMAL, BAIXA_GERACAO, TEMPESTADE, SUPORTE_VIDA_EM_ALERTA,
+MULTIPLAS_RESTRICOES) entram no Bloco 5. `criar_colonia` já cria todos os grupos da
+hierarquia; o Bloco 1 preenche o contexto, a energia solar e os auxiliares, e os outros
+grupos são completados pelos blocos seguintes.
 
 **Cargas sem repetição.** Cada carga elétrica está guardada em um lugar só: auxiliares em
 `energia`, suporte de oxigênio e de alimentos em `suporte_vida`, e as outras quatro em
-`operacoes`. A função `listar_cargas` junta as 7 numa lista, então nenhuma é somada duas
-vezes.
+`operacoes`. A função `listar_cargas` junta numa lista as cargas já cadastradas, então nenhuma é
+somada duas vezes.
 
 ## Como a energia é calculada
 
@@ -86,14 +85,13 @@ NORMAL:  120 × 8 × 1,00 = 960 kWh
 O fator solar vai de 0 a 1 e já inclui a perda por poeira do cenário, então é usado uma
 vez só.
 
-**2. Consumo** — `consumo_das_cargas(cargas, modo)`
+**2. Consumo** — `energia_kwh(potencia_kw, horas)`
 
-Cada carga consome `potência × 24 h`. No modo `"normal"` usa a potência normal; no modo
-`"minimo"` usa o mínimo protegido.
+Cada carga consome `potência × 24 h`. Nos exemplos do Bloco 1, os consumos de referência
+da seção 5 do apoio entram como dados de entrada:
 
 ```
 normal: (2 + 12 + 9 + 4 + 4 + 3 + 2) kW × 24 h = 36 × 24 = 864 kWh
-mínimo: (2 + 12 + 9 + 3 + 1 + 1 + 0,5) kW × 24 h = 28,5 × 24 = 684 kWh
 ```
 
 **3. Balanço** — `balanco_energetico(geracoes, consumos)`
@@ -131,15 +129,14 @@ Quando uma entrada é inválida, as funções de cálculo devolvem `None` em vez
 errado. Regras:
 - potências e energias não podem ser negativas;
 - fator solar entre 0 e 1;
-- horas entre 0 e 24;
-- potência normal de uma carga não pode ser menor que o mínimo protegido.
+- horas entre 0 e 24.
 
 ## Testes
 
-`testes/testar_energia.py` confere: base comum, geração solar, consumo, saldo,
-classificações (inclusive os limites exatos 1,10 e 1,00), consumo zero e entradas
-inválidas. Se algum `assert` falhar, o Python mostra a linha; se tudo der certo, aparece
-"Todos os testes passaram."
+A função `exemplos_bloco1()`, na Parte 9 do script, confere: base comum, geração
+solar, saldo, classificações (inclusive os limites exatos 1,10 e 1,00), consumo zero e
+entradas inválidas. Cada conferência aparece como `[OK]` ou `[FALHOU]`; no final, o
+programa mostra quantas deram certo.
 
 ## Simplificações
 
