@@ -8,32 +8,6 @@ Programa em Python que acompanha a energia de uma colônia de 50 pessoas em Mart
 sempre olhando um período de **24 horas**. Ele calcula quanta energia é gerada, quanta é
 consumida, mostra o saldo e classifica a situação em Verde, Amarelo ou Vermelho.
 
-
-## Como rodar
-
-Na pasta do repositório, no terminal:
-
-```bash
-python script/TriboSolarian_Colonia.py
-```
-
-### Exemplo de saída
-
-```
--- NORMAL
-Geração total: 960.00 kWh
-Consumo total: 864.00 kWh
-Saldo:         +96.00 kWh
-Cobertura:     1.1111
-Energia:       VERDE - margem de geração no período
-  [OK] NORMAL saldo: obtido 96.0, esperado 96.0
-  [OK] NORMAL classe: obtido 'VERDE', esperado 'VERDE'
-...
-Bloco 1: 29 de 29 conferências OK.
-```
-
----
-
 ## Como os dados estão organizados
 
 **Base comum.** Todos os módulos usam a mesma população (50 pessoas) e o mesmo período
