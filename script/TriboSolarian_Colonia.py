@@ -9,7 +9,8 @@ seguida pelo espaço onde a equipe escreverá o código correspondente.
 
 As seções citadas são as do material de apoio `docs/Colonia_material_apoio.docx`.
 Os documentos ficam em `docs/` e as evidências em `testes/`, quando produzidos.
-Este arquivo ainda não contém a implementação.
+Este arquivo reúne as implementações já recebidas. Os blocos ainda não entregues
+permanecem identificados nos respectivos pontos de integração.
 
 ## Repositório do projeto:
     URL>>
@@ -108,8 +109,24 @@ CARGA_AUXILIARES = {
 LIMIAR_COBERTURA_VERDE = 1.10    # cobertura >= 1,10
 LIMIAR_COBERTURA_AMARELO = 1.00  # 1,00 <= cobertura < 1,10
 
-# Bloco 2 — Souza: inserir aqui parâmetros eólicos e pares para a regressão.
+# Bloco 2 — Souza: parâmetros eólicos e pares para a regressão.
 
+# Dados modelados do material de apoio: velocidade do vento (m/s) e potência (kW).
+PARES_REGRESSAO_EOLICA = [
+    [6, 1.2215],
+    [7, 1.9396],
+    [8, 2.8953],
+    [9, 4.1224],
+    [10, 5.6549],
+]
+
+# Configuração inicial da turbina; os valores podem ser editados no cenário.
+EOLICA_PADRAO = {
+    "ativa": 1,          # 1 = ligada; 0 = desligada
+    "potencia_kw": 0.0,  # potência atual informada ou estimada (kW)
+    "horas": PERIODO_H,
+    "vento_ms": None,    # velocidade medida (m/s), quando disponível
+}
 
 # Bloco 3 — Cláudio: inserir aqui estoques, taxas, entradas e limiares vitais.
 
@@ -148,7 +165,10 @@ def criar_colonia(populacao=POPULACAO_PADRAO):
         },
         "energia": {
             "solar": dict(SOLAR_PADRAO),          # cópia: editar não muda o padrão
-            "eolica": {},                         # Bloco 2
+            "eolica": {
+                **EOLICA_PADRAO,
+                "pares_regressao": [par[:] for par in PARES_REGRESSAO_EOLICA],
+            },  # Bloco 2
             "auxiliares": dict(CARGA_AUXILIARES),
         },
         "suporte_vida": {
@@ -394,11 +414,93 @@ def balanco_energetico(geracoes, consumos):
     }
 
 
-# Bloco 2 — Souza: implementar aqui geração eólica do período.
+# Bloco 2 — Souza: geração eólica do período.
+
+def geracao_eolica(pot_kw, horas, eolica_ativa):
+    """Calcula a energia eólica gerada no período, em kWh.
+
+    eolica_ativa deve ser 1 (ligada) ou 0 (desligada).
+    Retorna None se alguma entrada for inválida.
+    """
+    if type(eolica_ativa) is not int or eolica_ativa not in (0, 1):
+        return None
+    if not numero_valido(pot_kw, minimo=0):
+        return None
+    if not numero_valido(horas, minimo=0, maximo=PERIODO_H):
+        return None
+
+    if eolica_ativa == 1:
+        return pot_kw * horas
+    return 0
 
 
-# Bloco 2 — Souza: implementar aqui ajuste da regressão e estimativa.
+# Bloco 2 — Souza: ajuste da regressão e estimativa.
 
+def ajustar_reta(pares):
+    """Calcula os coeficientes a e b da regressão linear por mínimos quadrados.
+
+    Cada par contém (velocidade do vento em m/s, potência em kW).
+    Retorna (a, b), correspondentes a potência = a * vento + b,
+    ou None quando os dados não permitem o ajuste.
+    """
+    if not isinstance(pares, (list, tuple)) or len(pares) < 2:
+        print("Erro: são necessários pelo menos dois pares.")
+        return None
+
+    ventos = []
+    potencias = []
+
+    for par in pares:
+        if not isinstance(par, (list, tuple)) or len(par) != 2:
+            print("Erro: cada par deve conter vento e potência.")
+            return None
+
+        vento, potencia = par
+        if not numero_valido(vento, minimo=0):
+            print("Erro: velocidade do vento inválida.")
+            return None
+        if not numero_valido(potencia, minimo=0):
+            print("Erro: potência inválida.")
+            return None
+
+        ventos.append(vento)
+        potencias.append(potencia)
+
+    media_ventos = sum(ventos) / len(ventos)
+    media_potencias = sum(potencias) / len(potencias)
+
+    numerador = 0
+    denominador = 0
+    for i in range(len(ventos)):
+        numerador += (
+            (ventos[i] - media_ventos) *
+            (potencias[i] - media_potencias)
+        )
+        denominador += (ventos[i] - media_ventos) ** 2
+
+    if denominador == 0:
+        print("Erro: não existe variação nas velocidades do vento.")
+        return None
+
+    a = numerador / denominador
+    b = media_potencias - a * media_ventos
+    return a, b
+
+
+def prever_potencia(vento_ms, a, b):
+    """Estima a potência eólica entre 6 e 10 m/s usando a reta ajustada."""
+    if not numero_valido(vento_ms, minimo=6, maximo=10):
+        print("Erro: velocidade fora da faixa de previsão (6 a 10 m/s).")
+        return None
+    if not numero_valido(a) or not numero_valido(b):
+        print("Erro: coeficientes da regressão inválidos.")
+        return None
+
+    potencia = a * vento_ms + b
+    if not numero_valido(potencia, minimo=0):
+        print("Erro: a previsão resultou em potência inválida.")
+        return None
+    return potencia
 
 # Bloco 3 — Cláudio: implementar aqui balanços e indicadores de oxigênio/alimentos.
 
@@ -529,8 +631,82 @@ def exemplos_bloco1():
 
     print(f"\nBloco 1: {resultados.count(True)} de {len(resultados)} conferências OK.")
 
-# Bloco 2 — Souza: inserir aqui exemplos de eólica, regressão e ligação energética.
+# Bloco 2 — Souza: exemplos de eólica, regressão e ligação energética.
 
+def exemplos_bloco2():
+    """Exemplos reproduzíveis de regressão e geração eólica."""
+    resultados = []
+
+    print("\n=== Bloco 2 | Regressão eólica ===")
+    ajuste = ajustar_reta(PARES_REGRESSAO_EOLICA)
+
+    if ajuste is not None:
+        a, b = ajuste
+        print(f"Coeficiente a: {a:.6f}")
+        print(f"Coeficiente b: {b:.6f}")
+
+        previsao = prever_potencia(8.5, a, b)
+        print(f"Potência prevista para 8,5 m/s: {previsao:.4f} kW")
+        resultados.append(conferir(
+            "previsão em 8,5 m/s é numérica",
+            numero_valido(previsao, minimo=0),
+            True
+        ))
+        resultados.append(conferir(
+            "vento fora da faixa de previsão",
+            prever_potencia(22, a, b),
+            None
+        ))
+    else:
+        print("Não foi possível realizar os testes da previsão.")
+        resultados.append(False)
+
+    print("\n=== Bloco 2 | Geração eólica ===")
+    resultados.append(conferir(
+        "turbina ligada: 3,7192 kW por 24 h",
+        geracao_eolica(3.7192, 24, 1),
+        89.2608
+    ))
+    resultados.append(conferir(
+        "turbina desligada",
+        geracao_eolica(3.7192, 24, 0),
+        0
+    ))
+    resultados.append(conferir(
+        "estado inválido da turbina",
+        geracao_eolica(3.7192, 24, 2),
+        None
+    ))
+    resultados.append(conferir(
+        "potência negativa",
+        geracao_eolica(-3, 24, 1),
+        None
+    ))
+    resultados.append(conferir(
+        "período acima de 24 horas",
+        geracao_eolica(3.7192, 25, 1),
+        None
+    ))
+
+    print("\n=== Bloco 2 | Validação da regressão ===")
+    resultados.append(conferir(
+        "velocidade negativa nos pares",
+        ajustar_reta([[-1, 2], [7, 3]]),
+        None
+    ))
+    resultados.append(conferir(
+        "potência negativa nos pares",
+        ajustar_reta([[6, 2], [7, -3]]),
+        None
+    ))
+    resultados.append(conferir(
+        "velocidades repetidas",
+        ajustar_reta([[8, 2], [8, 3]]),
+        None
+    ))
+
+    print(f"\nBloco 2: {resultados.count(True)} de {len(resultados)} conferências OK.")
+    return all(resultados)
 
 # Bloco 3 — Cláudio: inserir aqui exemplos dos recursos vitais e suas cargas.
 
