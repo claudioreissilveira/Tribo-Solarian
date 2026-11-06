@@ -1,29 +1,26 @@
 """
-# 🚀 **Colônia em Marte | Sistema Integrado da Colônia | Fase 3**
+# 🌱 **Colônia em Marte | Sistema Integrado da Colônia | Life Solarian**
 
-***Equipe Tribo Solarian.***
+***Equipe Tribo Solarian***
 
-Preparação do protótipo da Fase 3. Como nas fases anteriores, o arquivo está
-dividido em partes temáticas: cada parte tem uma apresentação sobre sua função,
-seguida pelo espaço onde a equipe escreverá o código correspondente.
-
-As seções citadas são as do material de apoio `docs/Colonia_material_apoio.docx`.
-Os documentos ficam em `docs/` e as evidências em `testes/`, quando produzidos.
-Este arquivo reúne as implementações já recebidas. Os blocos ainda não entregues
-permanecem identificados nos respectivos pontos de integração.
+Protótipo da Fase 3 (Colônia em Marte). O script está dividido em partes,
+cada parte tem uma apresentação (o que a seção faz e como funciona), seguida pelo espaço 
+onde fica  o código correspondente. As seções citadas são as do material 
+de apoio `docs/Colonia_material_apoio.docx`. Os documentos ficam em `docs/` e 
+as prints ficam em `testes/`. 
 
 ## Repositório do projeto:
-    URL>>
+    <https://github.com/claudioreissilveira/Tribo-Solarian/tree/3-Colonia>
 
 ## Integrantes
-- Cláudio Roberto Grillo Reis Silveira
-- Vitor Lima Montiel
-- Wallace Gabriel Américo Albuquerque
-- Victor Augusto dos Santos Souza
-- Thales Martins Oliveira Barros
+- Cláudio Roberto Grillo Reis Silveira | RM575353
+- Vitor Lima Montiel | RM575458
+- Wallace Gabriel Américo Albuquerque | RM575435
+- Victor Augusto dos Santos Souza | RM576021
+- Thales Martins Oliveira Barros | RM574664
 
 ## Como executar
-    As instruções serão preenchidas no README após a implementação.
+    python script/TriboSolarian_Colonia.py
 
 ## Sumário
 - Parte 0, bibliotecas e configuração
@@ -38,15 +35,15 @@ permanecem identificados nos respectivos pontos de integração.
 - Parte 9, exemplos de execução
 
 ## Contribuições por bloco
-- Bloco 1, Montiel: fundação, solar e balanço energético, em 03/11/2026.
-- Bloco 2, Souza: eólica e regressão, em 04/11/2026.
-- Bloco 3, Cláudio: oxigênio e alimentos, em 05/11/2026.
-- Bloco 4, Wallace: operações e recomendações, em 06/11/2026.
-- Bloco 5, Thales: clima, riscos e integração, em 09 e 10/11/2026.
+- Bloco 1, Montiel: fundação, solar e balanço energético.
+- Bloco 2, Souza: eólica e regressão.
+- Bloco 3, Cláudio: oxigênio e alimentos.
+- Bloco 4, Wallace: operações e recomendações.
+- Bloco 5, Thales: clima, riscos e integração.
 
 O desenvolvimento segue essa sequência, mas cada bloco contribui nas partes
 temáticas pertinentes. Os comentários abaixo indicam os locais de implementação.
-README e textos do relatório acompanham cada repasse; PDF e fechamento em 11/11.
+README e textos do relatório acompanham cada repasse.
 """
 
 
@@ -54,30 +51,27 @@ README e textos do relatório acompanham cada repasse; PDF e fechamento em 11/11
 
 Material de apoio, seção 10.3.
 
-Reúne os imports e configurações compartilhadas pelo programa. Utilizar recursos
-nativos e bibliotecas padrão quando necessários aos conteúdos trabalhados.
-Cada integrante acrescenta apenas o que sua contribuição realmente utiliza.
+Bibliotecas compartilhadas pelo programa. math fornece a verificação de números
+finitos utilizada na validação das entradas e dos resultados dos modelos.
 """
 
-# Bloco 1 — Montiel: iniciar aqui os imports e a configuração comum.
+# Bloco 1 — Montiel | Bibliotecas e configuração compartilhada
 
-import math  # math.isfinite confere se um número não é NaN nem infinito
-# Blocos 2 a 5 — Souza, Cláudio, Wallace e Thales: complementar este mesmo local.
+import math  
 
 
 """## **Parte 1, Constantes, limiares e padrões**
 
 Material de apoio, seções 1 a 8.
 
-Reúne os valores ajustáveis, separados da lógica: população, janela de análise,
-parâmetros solares e eólicos, estoques, taxas, cargas, mínimos operacionais,
-limiares ambientais e cenários. Manter as unidades e a origem dos dados.
-
-Os parâmetros já estão no apoio. Referências publicadas, parâmetros do exercício
-e dados modelados devem continuar identificados; não duplicar uma mesma carga.
+Parâmetros da colônia: população, período de análise, energia solar/eólica,
+cargas elétricas, estoques, entradas diárias e taxas dos recursos vitais.
+Os limiares definem as faixas de cobertura elétrica e reserva dos estoques.
+As unidades acompanham os campos; R, P e M identificam referências publicadas,
+parâmetros do exercício e dados modelados.
 """
 
-# Bloco 1 — Montiel: inserir aqui contexto, parâmetros solares e cargas comuns.
+# Bloco 1 — Montiel | Contexto, parâmetros solares e cargas comuns
 
 # Contexto comum (seção 1): todos os balanços usam a mesma população e janela.
 POPULACAO_PADRAO = 50   # pessoas (P), editável pelo operador
@@ -92,7 +86,7 @@ PERIODO_H = 24          # horas terrestres (P); não é um sol marciano (24,6597
 SOLAR_PADRAO = {
     "pot_solar_kw": 120,   # P: potência elétrica de referência
     "horas_solares": 8,    # P: horas equivalentes em 24 h (não é a duração do dia)
-    "fator_solar": 1.00,   # P: de 0 a 1; já inclui a perda adotada, usar uma vez só
+    "fator_solar": 1.00,   # P: de 0 a 1; representa a perda adotada em um único fator
 }
 
 # Carga comum da energia (seção 5): controle e distribuição, protegida nas 24 h.
@@ -109,7 +103,7 @@ CARGA_AUXILIARES = {
 LIMIAR_COBERTURA_VERDE = 1.10    # cobertura >= 1,10
 LIMIAR_COBERTURA_AMARELO = 1.00  # 1,00 <= cobertura < 1,10
 
-# Bloco 2 — Souza: parâmetros eólicos e pares para a regressão.
+# Bloco 2 — Souza | Parâmetros eólicos e pares da regressão
 
 # Dados modelados do material de apoio: velocidade do vento (m/s) e potência (kW).
 PARES_REGRESSAO_EOLICA = [
@@ -123,39 +117,70 @@ PARES_REGRESSAO_EOLICA = [
 # Configuração inicial da turbina; os valores podem ser editados no cenário.
 EOLICA_PADRAO = {
     "ativa": 1,          # 1 = ligada; 0 = desligada
-    "potencia_kw": 0.0,  # potência atual informada ou estimada (kW)
+    "potencia_kw": 2.8953,  # potência atual informada ou estimada (kW)
     "horas": PERIODO_H,
-    "vento_ms": None,    # velocidade medida (m/s), quando disponível
+    "vento_ms": 8,    # velocidade informada (m/s), quando disponível
 }
 
-# Bloco 3 — Cláudio: inserir aqui estoques, taxas, entradas e limiares vitais.
+# Bloco 3 — Cláudio | Estoques, taxas, entradas e limiares dos recursos vitais
+
+# Recursos para a janela de 24 h (seção 4). As taxas individuais são R;
+# estoques, entradas e cargas elétricas são parâmetros P do exercício.
+OXIGENIO_PADRAO = {
+    "estoque_kg": 134.25,
+    "entrada_kg_dia": 45,
+    "consumo_pessoa_kg_dia": 0.895,
+    "carga": {
+        "id": "O2",
+        "nome": "Suporte de oxigênio",
+        "pot_normal_kw": 12,
+        "minimo_protegido_kw": 12,
+        "periodo_h": PERIODO_H,
+    },
+}
+
+ALIMENTOS_PADRAO = {
+    "estoque_kg": 560,                # kg de alimento seco, sem embalagem
+    "entrada_kg_dia": 30,             # colheita disponível ou abastecimento
+    "consumo_pessoa_kg_dia": 0.800,    # kg seco por pessoa por 24 h
+    "carga": {
+        "id": "ALI",
+        "nome": "Suporte de alimentos",
+        "pot_normal_kw": 9,
+        "minimo_protegido_kw": 9,
+        "periodo_h": PERIODO_H,
+    },
+}
+
+# Cobertura bruta do estoque, em dias: (a partir disso é verde, é amarelo).
+# Políticas P das seções 4.1 e 4.2, não limites fisiológicos.
+LIMIARES_RESERVAS = {"oxigenio": (2, 1), "alimentos": (7, 3)}
 
 
-# Bloco 4 — Wallace: inserir aqui dados das operações, mínimos e prioridades.
+# Bloco 4 — Wallace | Dados das operações complementares e mínimos protegidos
 
 
-# Bloco 5 — Thales: inserir aqui parâmetros ambientais, limiares e cenários.
+# Bloco 5 — Thales | Parâmetros ambientais e cenários
 
 
 """## **Parte 2, Módulos e estruturas de dados**
 
 Material de apoio, seções 1 e 9.1.
 
-Organiza os dados da colônia em listas, registros chave-valor e agrupamentos
-hierárquicos. Energia contém solar/eólica; os demais grupos representam recursos
-vitais, operações, clima e riscos. Cada integrante amplia a mesma base recebida.
-
-As funções desta parte organizam e dão acesso aos dados. Cálculos ficam na
-Parte 7, classificações na Parte 5 e interação com o usuário nas Partes 3 e 8.
+Hierarquia da colônia em dicionários aninhados: contexto, energia, suporte à vida,
+operações, clima e riscos. Listas representam os pares eólicos e as operações.
+As cópias dos padrões mantêm os cadastros independentes; listar_cargas reúne
+as cargas da hierarquia para o balanço energético.
 """
 
-# Bloco 1 — Montiel: implementar aqui a estrutura comum e o acesso à hierarquia.
+# Bloco 1 — Montiel | Estrutura comum e hierarquia da colônia
 
 def criar_colonia(populacao=POPULACAO_PADRAO):
     """Cria a estrutura comum da colônia em dicionários aninhados.
 
-    sistema -> subsistema -> campos. Os grupos vazios são preenchidos
-    pelos blocos seguintes, sem criar outra estrutura.
+    A hierarquia reúne contexto, energia, recursos vitais, operações,
+    clima e riscos. Os dados energéticos e vitais são inicializados;
+    os demais grupos são inicializados vazios.
     """
     colonia = {
         "contexto": {
@@ -164,17 +189,11 @@ def criar_colonia(populacao=POPULACAO_PADRAO):
             "periodo_h": PERIODO_H,
         },
         "energia": {
-            "solar": dict(SOLAR_PADRAO),          # cópia: editar não muda o padrão
-            "eolica": {
-                **EOLICA_PADRAO,
-                "pares_regressao": [par[:] for par in PARES_REGRESSAO_EOLICA],
-            },  # Bloco 2
+            "solar": dict(SOLAR_PADRAO),         
+            "eolica": criar_eolica(),  # Bloco 2
             "auxiliares": dict(CARGA_AUXILIARES),
         },
-        "suporte_vida": {
-            "oxigenio": {},                       # Bloco 3
-            "alimentos": {},                      # Bloco 3
-        },
+        "suporte_vida": criar_suporte_vida(),      # Bloco 3
         "operacoes": [],                          # Bloco 4: lista de registros
         "clima": {},                              # Bloco 5
         "riscos": [],                             # Bloco 5
@@ -198,61 +217,72 @@ def listar_cargas(colonia):
         cargas.append(operacao)
     return cargas
 
-# Bloco 2 — Souza: acrescentar aqui as estruturas dos dados e pares eólicos.
+# Bloco 2 — Souza | Estruturas dos dados eólicos
 
 
-# Bloco 3 — Cláudio: acrescentar aqui os registros de oxigênio e alimentos.
+def criar_eolica():
+    eolica = dict(EOLICA_PADRAO)
+    eolica["pares_regressao"] = [par[:] for par in PARES_REGRESSAO_EOLICA]
+    return eolica
 
 
-# Bloco 4 — Wallace: acrescentar aqui os registros das quatro operações.
+# Bloco 3 — Cláudio | Registros de oxigênio e alimentos
 
 
-# Bloco 5 — Thales: acrescentar aqui os registros de ambiente e resultados gerais.
+def criar_suporte_vida():
+    """Cria registros independentes, inclusive as cargas aninhadas.
+
+    As cópias dos recursos e das cargas preservam os padrões e outras
+    colônias. listar_cargas() recolhe a carga de cada recurso nesta estrutura.
+    """
+    oxigenio = dict(OXIGENIO_PADRAO)
+    oxigenio["carga"] = dict(OXIGENIO_PADRAO["carga"])
+    alimentos = dict(ALIMENTOS_PADRAO)
+    alimentos["carga"] = dict(ALIMENTOS_PADRAO["carga"])
+    return {"oxigenio": oxigenio, "alimentos": alimentos}
+
+
+# Bloco 4 — Wallace | Registros das operações complementares
+
+
+# Bloco 5 — Thales | Registros de ambiente e resultados gerais
 
 
 """## **Parte 3, Entrada de dados manual**
 
 Material de apoio, seções 7 e 10.1.
 
-Reúne a leitura e validação de entradas por módulo. Cada pergunta identifica
-a unidade e os valores aceitos. O operador pode aceitar os dados do cenário
-ou editar os campos; erros de entrada devem ser explicados para nova tentativa.
-
-Esta parte fornece dados às funções, sem misturar perguntas com os cálculos.
-Até o bloco final, os exemplos de cada contribuição usam entradas de conferência.
+Entrada, validação e edição dos campos de cada módulo, com unidades e domínios
+definidos no apoio. A interação com o operador é separada dos cálculos.
 """
 
-# Bloco 5 — Thales: implementar aqui leitura, validação e edição dos campos.
+# Bloco 5 — Thales | Leitura, validação e edição dos campos
 
 
 """## **Parte 4, Preparação do cenário e dos dados de avaliação**
 
 Material de apoio, seção 7.
 
-Prepara o contexto a ser avaliado a partir do cenário escolhido e das entradas
-manuais. Os sistemas devem usar a mesma população, janela e condição ambiental.
-Os cenários são os do apoio; PERSONALIZADO parte dos valores de NORMAL.
-
-Ao contrário das leituras simuladas do pouso, esta fase utiliza os dados
-informados, sem acrescentar sorteios ou sensores que não fazem parte do escopo.
+Contexto comum de avaliação: cenário, população, período e dados dos sistemas.
+Os cenários de referência representam condições normais e adversas; a edição
+personalizada utiliza os valores de NORMAL como base.
 """
 
-# Bloco 5 — Thales: implementar aqui a preparação e atualização do contexto comum.
+# Bloco 5 — Thales | Preparação do contexto de avaliação
 
 
 """## **Parte 5, Classificação e regras de decisão**
 
 Material de apoio, seções 3.3, 4, 6 e 9.2.
 
-Transforma os dados e os resultados dos modelos em classificações e diagnósticos
-com motivos. As faixas devem aparecer por escrito, sem depender apenas de cores.
-Condições simples e combinadas relacionam energia, recursos e ambiente.
-
-Os resultados numéricos vêm da Parte 7. A recomendação de ajustes respeita
-a prioridade das operações, tratada separadamente na Parte 6.
+Classificações e diagnósticos dos resultados numéricos. A cobertura elétrica
+relaciona geração e consumo; a reserva bruta relaciona estoque e demanda diária.
+A suficiência dos recursos considera estoque mais entrada no período de 24 h,
+separadamente da classificação da reserva. Os diagnósticos apresentam valores,
+situação e motivos. Clima e riscos compõem as avaliações ambientais.
 """
 
-# Bloco 1 — Montiel: implementar aqui classificação e diagnóstico energético.
+# Bloco 1 — Montiel | Classificação e diagnóstico energético
 
 def classificar_cobertura(cobertura):
     """Classifica a cobertura elétrica (seção 3.3), por escrito.
@@ -294,44 +324,107 @@ def diagnostico_energetico(balanco):
     linhas.append(f"Energia:       {classe} - {leituras[classe]}")
     return "\n".join(linhas)
 
-# Bloco 3 — Cláudio: implementar aqui classificações e diagnósticos dos recursos.
+# Bloco 3 — Cláudio | Classificações e diagnósticos dos recursos vitais
 
 
-# Bloco 5 — Thales: implementar aqui classificações de vento, poeira e temperatura.
+def classificar_reserva(dias, limiar_verde, limiar_amarelo):
+    """Classifica a cobertura bruta do estoque pelas faixas do apoio."""
+    if not numero_valido(dias, minimo=0):
+        return None
+    if not numero_valido(limiar_amarelo, minimo=0):
+        return None
+    if not numero_valido(limiar_verde) or limiar_verde <= limiar_amarelo:
+        return None
+    dias = round(dias, 6)
+    if dias >= limiar_verde:
+        return "VERDE"
+    elif dias >= limiar_amarelo:
+        return "AMARELO"
+    else:
+        return "VERMELHO"
 
 
-# Bloco 5 — Thales: implementar aqui condições combinadas e avaliação dos riscos.
+def avaliar_suporte_vida(colonia):
+    """Avalia os dois recursos na janela comum de 24 h.
+
+    suficiente descreve o atendimento do período; classificacao descreve
+    apenas a cobertura bruta do estoque. Devolve None se houver dado inválido.
+    Não altera estoques nem aplica reposição automaticamente à colônia.
+    """
+    if colonia["contexto"]["periodo_h"] != PERIODO_H:
+        return None
+    resultados = {}
+    for nome in ("oxigenio", "alimentos"):
+        recurso = colonia["suporte_vida"][nome]
+        balanco = balanco_recurso(
+            colonia["contexto"]["populacao"],
+            recurso.get("estoque_kg"),
+            recurso.get("entrada_kg_dia"),
+            recurso.get("consumo_pessoa_kg_dia"),
+        )
+        if balanco is None:
+            return None
+        verde, amarelo = LIMIARES_RESERVAS[nome]
+        balanco["classificacao"] = classificar_reserva(
+            balanco["cobertura_dias"], verde, amarelo)
+        resultados[nome] = balanco
+    return resultados
+
+
+def diagnostico_recurso(nome, balanco, unidade="kg"):
+    """Explica o resultado de avaliar_suporte_vida, sem confundir os indicadores.
+
+    O parâmetro unidade identifica a massa apresentada; "kg seco" corresponde
+    aos alimentos. A massa de O2 não representa concentração ou pressão
+    de oxigênio no ar do habitat.
+    """
+    if balanco["suficiente"]:
+        situacao = "SUFICIENTE"
+        motivo = "estoque e entrada atendem à demanda das 24 h"
+    else:
+        situacao = "INSUFICIENTE"
+        motivo = "estoque e entrada não cobrem a demanda das 24 h"
+    return "\n".join([
+        f"{nome}: {situacao} - {motivo}",
+        f"Demanda:       {balanco['demanda_kg_dia']:.3f} {unidade}/24 h",
+        f"Disponível:    {balanco['disponivel_kg']:.3f} {unidade}",
+        f"Saldo:         {balanco['saldo_kg']:+.3f} {unidade}",
+        f"Reserva bruta: {balanco['cobertura_dias']:.2f} dias "
+        f"- {balanco['classificacao']} (sem contar entradas futuras)",
+    ])
+
+
+# Bloco 5 — Thales | Classificações de vento, poeira e temperatura
+
+
+# Bloco 5 — Thales | Condições combinadas e avaliação dos riscos
 
 
 """## **Parte 6, Prioridades e recomendações de equilíbrio**
 
 Material de apoio, seção 5.
 
-Organiza as recomendações de redução das operações complementares por importância,
-preservando funções essenciais e mínimos protegidos. Utiliza os consumos calculados
-na Parte 7 e os diagnósticos da Parte 5 para explicar os ajustes e suas limitações.
-
-O programa orienta o operador, sem alterar automaticamente as entradas. A falta
-de oxigênio ou alimento não é resolvida apenas por uma economia de energia.
+Prioridades das operações complementares: armazenamento/logística, pesquisa,
+mobilidade e conforto, do mais importante ao menos importante. A ordem de
+redução é inversa, com proteção das funções vitais e dos mínimos operacionais.
+As recomendações relacionam os diagnósticos às possibilidades de economia.
 """
 
-# Bloco 4 — Wallace: implementar aqui prioridades e recomendações das operações.
+# Bloco 4 — Wallace | Prioridades e recomendações das operações
 
 
 """## **Parte 7, Modelos matemáticos e previsão**
 
 Material de apoio, seções 3, 4, 5 e 8.
 
-Reúne os cálculos solares e eólicos, o balanço energético, os balanços dos recursos,
-os consumos das operações e a regressão simples. Cada função recebe os dados
-necessários e devolve resultados com unidades, sem solicitar entradas ao usuário.
-
-A estimativa por regressão utiliza os pares modelados do apoio e deve ser
-identificada separadamente da geração atual. Respeitar a faixa de ajuste,
-as limitações dos dados e as conferências necessárias antes de calcular.
+Validação numérica, geração solar/eólica, balanço energético e indicadores de
+oxigênio e alimentos. A regressão ajusta uma reta aos pares modelados de vento
+e potência, com estimativas entre 6 e 10 m/s. A geração atual e a previsão
+permanecem distintas. Os consumos das cargas cadastradas alimentam o balanço,
+com verificação de identificadores repetidos e períodos incompatíveis.
 """
 
-# Bloco 1 — Montiel: implementar aqui geração solar e balanço energético.
+# Bloco 1 — Montiel | Modelos de geração solar e balanço energético
 
 def numero_valido(valor, minimo=None, maximo=None):
     """True se 'valor' é um número finito dentro do intervalo (seção 10.1).
@@ -414,12 +507,27 @@ def balanco_energetico(geracoes, consumos):
     }
 
 
-# Bloco 2 — Souza: geração eólica do período.
+def avaliar_energia(colonia):
+    solar = colonia["energia"]["solar"]
+    eolica = colonia["energia"]["eolica"]
+    geracoes = {
+        "solar": geracao_solar(solar["pot_solar_kw"], solar["horas_solares"], solar["fator_solar"]),
+        "eolica": geracao_eolica(eolica["potencia_kw"], eolica["horas"], eolica["ativa"]),
+    }
+    if geracoes["solar"] is None or geracoes["eolica"] is None:
+        return None
+    consumos = consumos_eletricos(colonia)
+    if consumos is None:
+        return None
+    return balanco_energetico(geracoes, consumos)
+
+
+# Bloco 2 — Souza | Modelo de geração eólica
 
 def geracao_eolica(pot_kw, horas, eolica_ativa):
     """Calcula a energia eólica gerada no período, em kWh.
 
-    eolica_ativa deve ser 1 (ligada) ou 0 (desligada).
+    eolica_ativa aceita 1 (ligada) ou 0 (desligada).
     Retorna None se alguma entrada for inválida.
     """
     if type(eolica_ativa) is not int or eolica_ativa not in (0, 1):
@@ -434,7 +542,7 @@ def geracao_eolica(pot_kw, horas, eolica_ativa):
     return 0
 
 
-# Bloco 2 — Souza: ajuste da regressão e estimativa.
+# Bloco 2 — Souza | Ajuste da regressão e estimativa de potência
 
 def ajustar_reta(pares):
     """Calcula os coeficientes a e b da regressão linear por mínimos quadrados.
@@ -502,45 +610,98 @@ def prever_potencia(vento_ms, a, b):
         return None
     return potencia
 
-# Bloco 3 — Cláudio: implementar aqui balanços e indicadores de oxigênio/alimentos.
+# Bloco 3 — Cláudio | Balanços e indicadores de oxigênio e alimentos
 
 
-# Bloco 4 — Wallace: implementar aqui consumos e parcelas ajustáveis das operações.
+def balanco_recurso(populacao, estoque_kg, entrada_kg_dia, consumo_pessoa_kg_dia):
+    """Balanço de um recurso para 24 h, com cobertura bruta em dias.
+
+    Compara estoque + entrada disponível com a demanda da população.
+    A cobertura bruta considera somente estoque / demanda diária.
+    Não representa autonomia líquida nem garantia de oferta a cada instante.
+    """
+    if type(populacao) is not int or populacao <= 0:
+        return None
+    for valor in (estoque_kg, entrada_kg_dia, consumo_pessoa_kg_dia):
+        if not numero_valido(valor, minimo=0):
+            return None
+    if consumo_pessoa_kg_dia == 0:
+        return None
+
+    demanda = populacao * consumo_pessoa_kg_dia
+    disponivel = estoque_kg + entrada_kg_dia
+    if not numero_valido(demanda, minimo=0) or demanda == 0:
+        return None
+    if not numero_valido(disponivel, minimo=0):
+        return None
+    cobertura = estoque_kg / demanda
+    if not numero_valido(cobertura, minimo=0):
+        return None
+    saldo = disponivel - demanda
+    return {
+        "estoque_kg": estoque_kg,
+        "entrada_kg_dia": entrada_kg_dia,
+        "demanda_kg_dia": demanda,
+        "disponivel_kg": disponivel,
+        "saldo_kg": saldo,
+        "cobertura_dias": cobertura,
+        "suficiente": saldo >= 0,
+    }
+
+
+def consumos_eletricos(colonia):
+    """Converte as cargas cadastradas em {id: kWh} para o balanço existente.
+
+    Inclui auxiliares, recursos vitais e operações que já estiverem cadastradas.
+    Recusa identificador repetido, carga inválida ou janela diferente do contexto,
+    em vez de somar duas vezes ou sobrescrever um consumo silenciosamente.
+    """
+    consumos = {}
+    for carga in listar_cargas(colonia):
+        identificador = carga.get("id")
+        if not isinstance(identificador, str) or not identificador:
+            return None
+        if identificador in consumos:
+            return None
+        if carga.get("periodo_h") != colonia["contexto"]["periodo_h"]:
+            return None
+        consumo = energia_kwh(carga.get("pot_normal_kw"), carga.get("periodo_h"))
+        if consumo is None:
+            return None
+        consumos[identificador] = consumo
+    return consumos
+
+
+# Bloco 4 — Wallace | Consumos e parcelas ajustáveis das operações
 
 
 """## **Parte 8, Avaliação integrada e menu principal**
 
 Material de apoio, seções 9 e 10.
 
-Reúne as funções anteriores em uma avaliação única: prepara o contexto, realiza
-os cálculos, obtém classificações, cruza riscos e apresenta recomendações.
-O menu permite selecionar cenário, editar dados e reavaliar a colônia.
-
-Mostrar os dados avaliados, unidades, resultados, motivos, limitações e previsão
-quando aplicável. Utilizar as funções dos blocos recebidos. A ordem das chamadas
-do programa é diferente da sequência de construção dos integrantes.
+Coordenação entre contexto, cálculos, classificações, riscos e recomendações.
+Menu de cenários e edição de dados, com apresentação dos resultados, unidades,
+motivos e limites dos modelos.
 """
 
-# Bloco 5 — Thales: implementar aqui a avaliação integrada e sua apresentação.
+# Bloco 5 — Thales | Coordenação da avaliação e apresentação dos resultados
 
 
-# Bloco 5 — Thales: implementar aqui o menu e o ponto de entrada do programa.
-# Manter o início da execução separado das definições, sem abrir menu na importação.
+# Bloco 5 — Thales | Menu e ponto de entrada do programa
+# A definição das funções permanece separada de sua execução.
 
 
 """## **Parte 9, Exemplos de execução**
 
 Material de apoio, seções 7 e 10.
 
-Reúne exemplos reproduzíveis com entrada, saída obtida e conferência realizada.
-Cada bloco acrescenta seus casos e mantém os exemplos das contribuições recebidas.
-Incluir situações normais, adversas, limites e entradas inválidas pertinentes.
-
-Ao final, conferir os cenários em uma execução integrada e usar os resultados
-reais no README e no relatório. Não há saídas resolvidas neste roteiro.
+Conferências reproduzíveis de estrutura, energia, regressão e recursos vitais.
+A função conferir compara os valores obtidos e esperados e registra OK ou FALHOU.
+Os exemplos abrangem condições normais, adversas, limites e entradas inválidas,
+incluindo a conexão entre o suporte vital e o balanço solar/eólico.
 """
 
-# Bloco 1 — Montiel: inserir aqui exemplos da fundação e da parte energética.
+# Bloco 1 — Montiel | Exemplos da fundação e da parte energética
 
 def conferir(descricao, obtido, esperado):
     """Mostra o resultado de uma conferência e devolve True se bateu."""
@@ -566,8 +727,8 @@ def exemplos_bloco1():
     colonia = criar_colonia()
     resultados.append(conferir("população padrão", colonia["contexto"]["populacao"], 50))
     resultados.append(conferir("janela de análise (h)", colonia["contexto"]["periodo_h"], 24))
-    resultados.append(conferir("cargas cadastradas até o Bloco 1",
-                               len(listar_cargas(colonia)), 1))
+    resultados.append(conferir("cargas cadastradas até o Bloco 3",
+                               len(listar_cargas(colonia)), 3))
     colonia["energia"]["solar"]["pot_solar_kw"] = 1
     resultados.append(conferir("editar uma colônia não muda o padrão",
                                SOLAR_PADRAO["pot_solar_kw"], 120))
@@ -578,7 +739,7 @@ def exemplos_bloco1():
     resultados.append(conferir("TEMPESTADE, fator 0,10", geracao_solar(120, 8, 0.10), 96.0))
 
     # Consumos de referência da tabela da seção 5, recebidos como entrada.
-    # Quando os Blocos 3 e 4 existirem, virão de listar_cargas().
+    # Este exemplo usa as potências da tabela, independentemente das cargas cadastradas.
     potencias_referencia_kw = {"AUX": 2, "O2": 12, "ALI": 9,
                                "ARM": 4, "PES": 4, "MOB": 3, "CON": 2}
     consumos = {}
@@ -591,8 +752,8 @@ def exemplos_bloco1():
              ("TEMPESTADE", 0.10, -768.0, "VERMELHO")]
     for nome, fator, saldo_esperado, classe_esperada in casos:
         geracoes = {"solar": geracao_solar(120, 8, fator)}
-        # Ponto de conexão da geração eólica (Bloco 2):
-        # geracoes["eolica"] = <energia eólica do período em kWh>
+        # Este caso considera somente geração solar; os exemplos seguintes
+        # demonstram a eólica e sua conexão ao consumo do suporte vital.
         balanco = balanco_energetico(geracoes, consumos)
         print(f"-- {nome}")
         print(diagnostico_energetico(balanco))
@@ -631,14 +792,16 @@ def exemplos_bloco1():
 
     print(f"\nBloco 1: {resultados.count(True)} de {len(resultados)} conferências OK.")
 
-# Bloco 2 — Souza: exemplos de eólica, regressão e ligação energética.
+# Bloco 2 — Souza | Exemplos de geração eólica e regressão
 
 def exemplos_bloco2():
     """Exemplos reproduzíveis de regressão e geração eólica."""
     resultados = []
+    colonia = criar_colonia()
+    eolica = colonia["energia"]["eolica"]
 
     print("\n=== Bloco 2 | Regressão eólica ===")
-    ajuste = ajustar_reta(PARES_REGRESSAO_EOLICA)
+    ajuste = ajustar_reta(eolica["pares_regressao"])
 
     if ajuste is not None:
         a, b = ajuste
@@ -652,6 +815,9 @@ def exemplos_bloco2():
             numero_valido(previsao, minimo=0),
             True
         ))
+        resultados.append(conferir("coeficiente angular da reta", a, 1.10496))
+        resultados.append(conferir("coeficiente linear da reta", b, -5.67294))
+        resultados.append(conferir("potência prevista para 8,5 m/s (kW)", previsao, 3.71922))
         resultados.append(conferir(
             "vento fora da faixa de previsão",
             prever_potencia(22, a, b),
@@ -705,13 +871,105 @@ def exemplos_bloco2():
         None
     ))
 
+    print("\n=== Bloco 2 | Cadastro e ligação ao balanço energético ===")
+    copia_eolica = criar_eolica()
+    copia_eolica["pares_regressao"][0][1] = 999
+    resultados.append(conferir("pares independentes entre cadastros",
+                               criar_eolica()["pares_regressao"][0][1], 1.2215))
+    casos = [("NORMAL", 1.00, 8, 1, 477.4872, "VERDE"),
+             ("TEMPESTADE", 0.10, 22, 0, -456.0, "VERMELHO")]
+    for nome, fator, vento, ativa, saldo_esperado, classe_esperada in casos:
+        colonia = criar_colonia()
+        colonia["energia"]["solar"]["fator_solar"] = fator
+        colonia["energia"]["eolica"].update(vento_ms=vento, ativa=ativa)
+        balanco = avaliar_energia(colonia)
+        print(f"-- {nome}")
+        print(diagnostico_energetico(balanco))
+        resultados.append(conferir(f"{nome}, saldo com cargas cadastradas (kWh)",
+                                   balanco["saldo_kwh"], saldo_esperado))
+        resultados.append(conferir(f"{nome}, classificação energética",
+                                   balanco["classificacao"], classe_esperada))
+
     print(f"\nBloco 2: {resultados.count(True)} de {len(resultados)} conferências OK.")
     return all(resultados)
 
-# Bloco 3 — Cláudio: inserir aqui exemplos dos recursos vitais e suas cargas.
+# Bloco 3 — Cláudio | Exemplos dos recursos vitais e da conexão energética
 
 
-# Bloco 4 — Wallace: inserir aqui exemplos das operações, mínimos e recomendações.
+def exemplos_bloco3():
+    """Conferências dos recursos vitais e de sua conexão aos modelos de energia."""
+    resultados = []
+    colonia = criar_colonia()
+    recursos = avaliar_suporte_vida(colonia)
+
+    print("\n=== Bloco 3 | Recursos nas condições normais ===")
+    print(diagnostico_recurso("Oxigênio", recursos["oxigenio"]))
+    print(diagnostico_recurso("Alimentos", recursos["alimentos"], "kg seco"))
+    resultados.append(conferir("demanda diária de O2 (kg)",
+                               recursos["oxigenio"]["demanda_kg_dia"], 44.75))
+    resultados.append(conferir("saldo de O2 (kg)", recursos["oxigenio"]["saldo_kg"], 134.5))
+    resultados.append(conferir("estoque de O2 em dias", recursos["oxigenio"]["cobertura_dias"], 3.0))
+    resultados.append(conferir("demanda de alimento seco (kg/dia)",
+                               recursos["alimentos"]["demanda_kg_dia"], 40.0))
+    resultados.append(conferir("saldo de alimento seco (kg)",
+                               recursos["alimentos"]["saldo_kg"], 550.0))
+    resultados.append(conferir("estoque de alimentos em dias",
+                               recursos["alimentos"]["cobertura_dias"], 14.0))
+
+    print("\n=== Bloco 3 | Energia com as cargas já cadastradas ===")
+    # Cargas deste exemplo: AUX 48 + O2 288 + ALI 216 = 552 kWh.
+    consumos = consumos_eletricos(colonia)
+    resultados.append(conferir("consumos por carga (kWh)", consumos,
+                               {"AUX": 48, "O2": 288, "ALI": 216}))
+    solar = colonia["energia"]["solar"]
+    # Valor atual modelado do apoio para vento de 8 m/s; não é a previsão.
+    colonia["energia"]["eolica"]["potencia_kw"] = 2.8953
+    eolica = colonia["energia"]["eolica"]
+    geracoes = {
+        "solar": geracao_solar(solar["pot_solar_kw"], solar["horas_solares"], solar["fator_solar"]),
+        "eolica": geracao_eolica(eolica["potencia_kw"], eolica["horas"], eolica["ativa"]),
+    }
+    balanco = balanco_energetico(geracoes, consumos)
+    print(diagnostico_energetico(balanco))
+    resultados.append(conferir("consumo sem repetição (kWh)", balanco["consumo_total_kwh"], 552))
+    resultados.append(conferir("saldo solar/eólica com suporte (kWh)",
+                               balanco["saldo_kwh"], 477.4872))
+
+    print("\n=== Bloco 3 | Falta no período e reserva curta ===")
+    colonia["suporte_vida"]["oxigenio"].update(estoque_kg=22.375, entrada_kg_dia=0)
+    colonia["suporte_vida"]["alimentos"].update(estoque_kg=80, entrada_kg_dia=20)
+    alerta = avaliar_suporte_vida(colonia)
+    print(diagnostico_recurso("Oxigênio", alerta["oxigenio"]))
+    print(diagnostico_recurso("Alimentos", alerta["alimentos"], "kg seco"))
+    resultados.append(conferir("O2 insuficiente", alerta["oxigenio"]["suficiente"], False))
+    resultados.append(conferir("reserva de alimento curta",
+                               alerta["alimentos"]["classificacao"], "VERMELHO"))
+    resultados.append(conferir("alimento atende às 24 h",
+                               alerta["alimentos"]["suficiente"], True))
+
+    print("\n=== Bloco 3 | Limites das reservas ===")
+    for nome, verde, amarelo in [("O2", 2, 1), ("alimentos", 7, 3)]:
+        for dias, esperado in [(verde, "VERDE"), (amarelo, "AMARELO"), (0, "VERMELHO")]:
+            resultados.append(conferir(f"{nome}, estoque para {dias} dias",
+                                       classificar_reserva(dias, verde, amarelo), esperado))
+
+    print("\n=== Bloco 3 | Entradas inválidas ===")
+    for descricao, dados in [
+        ("população zero", (0, 134.25, 45, 0.895)),
+        ("população fracionada", (50.5, 134.25, 45, 0.895)),
+        ("estoque negativo", (50, -1, 45, 0.895)),
+        ("entrada em texto", (50, 134.25, "45", 0.895)),
+        ("estoque NaN", (50, math.nan, 45, 0.895)),
+        ("entrada infinita", (50, 134.25, math.inf, 0.895)),
+        ("taxa zero", (50, 134.25, 45, 0)),
+    ]:
+        resultados.append(conferir(descricao, balanco_recurso(*dados), None))
+
+    print(f"\nBloco 3: {resultados.count(True)} de {len(resultados)} conferências OK.")
+    return all(resultados)
 
 
-# Bloco 5 — Thales: inserir aqui exemplos de clima, riscos e funcionamento integrado.
+# Bloco 4 — Wallace | Exemplos das operações e recomendações
+
+
+# Bloco 5 — Thales | Exemplos de clima, riscos e integração completa
