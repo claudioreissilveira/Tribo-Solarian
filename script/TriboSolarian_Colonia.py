@@ -38,8 +38,8 @@ as prints ficam em `testes/`.
 - Bloco 1, Montiel: fundação, solar e balanço energético.
 - Bloco 2, Souza: eólica e regressão.
 - Bloco 3, Cláudio: oxigênio e alimentos.
-- Bloco 4, Wallace: operações e recomendações.
-- Bloco 5, Thales: clima, riscos e integração.
+- Bloco 4, Thales: operações e recomendações.
+- Bloco 5, Wallace: clima, riscos e integração.
 
 O desenvolvimento segue essa sequência, mas cada bloco contribui nas partes
 temáticas pertinentes. Os comentários abaixo indicam os locais de implementação.
@@ -157,10 +157,22 @@ ALIMENTOS_PADRAO = {
 LIMIARES_RESERVAS = {"oxigenio": (2, 1), "alimentos": (7, 3)}
 
 
-# Bloco 4 — Wallace | Dados das operações complementares e mínimos protegidos
+# Bloco 4 — Thales | Dados das operações complementares e mínimos protegidos
+
+# Parâmetros P da seção 5. Prioridade 1 é a mais importante entre complementares.
+OPERACOES_PADRAO = [
+    {"id": "ARM", "nome": "Armazenamento e logística", "prioridade": 1,
+     "pot_normal_kw": 4, "minimo_protegido_kw": 3, "periodo_h": PERIODO_H},
+    {"id": "PES", "nome": "Pesquisa e experimentos", "prioridade": 2,
+     "pot_normal_kw": 4, "minimo_protegido_kw": 1, "periodo_h": PERIODO_H},
+    {"id": "MOB", "nome": "Mobilidade", "prioridade": 3,
+     "pot_normal_kw": 3, "minimo_protegido_kw": 1, "periodo_h": PERIODO_H},
+    {"id": "CON", "nome": "Conforto e áreas comuns", "prioridade": 4,
+     "pot_normal_kw": 2, "minimo_protegido_kw": 0.5, "periodo_h": PERIODO_H},
+]
 
 
-# Bloco 5 — Thales | Parâmetros ambientais e cenários
+# Bloco 5 — Wallace | Parâmetros ambientais e cenários
 
 
 """## **Parte 2, Módulos e estruturas de dados**
@@ -180,7 +192,7 @@ def criar_colonia(populacao=POPULACAO_PADRAO):
 
     A hierarquia reúne contexto, energia, recursos vitais, operações,
     clima e riscos. Os dados energéticos e vitais são inicializados;
-    os demais grupos são inicializados vazios.
+    as operações recebem os padrões; clima e riscos ficam vazios para o Bloco 5.
     """
     colonia = {
         "contexto": {
@@ -194,7 +206,7 @@ def criar_colonia(populacao=POPULACAO_PADRAO):
             "auxiliares": dict(CARGA_AUXILIARES),
         },
         "suporte_vida": criar_suporte_vida(),      # Bloco 3
-        "operacoes": [],                          # Bloco 4: lista de registros
+        "operacoes": criar_operacoes(),           # Bloco 4: lista de registros
         "clima": {},                              # Bloco 5
         "riscos": [],                             # Bloco 5
     }
@@ -242,10 +254,15 @@ def criar_suporte_vida():
     return {"oxigenio": oxigenio, "alimentos": alimentos}
 
 
-# Bloco 4 — Wallace | Registros das operações complementares
+# Bloco 4 — Thales | Registros das operações complementares
 
 
-# Bloco 5 — Thales | Registros de ambiente e resultados gerais
+def criar_operacoes():
+    """Cria cópias independentes das quatro operações, sem alterar os padrões."""
+    return [dict(operacao) for operacao in OPERACOES_PADRAO]
+
+
+# Bloco 5 — Wallace | Registros de ambiente e resultados gerais
 
 
 """## **Parte 3, Entrada de dados manual**
@@ -256,7 +273,7 @@ Entrada, validação e edição dos campos de cada módulo, com unidades e domí
 definidos no apoio. A interação com o operador é separada dos cálculos.
 """
 
-# Bloco 5 — Thales | Leitura, validação e edição dos campos
+# Bloco 5 — Wallace | Leitura, validação e edição dos campos
 
 
 """## **Parte 4, Preparação do cenário e dos dados de avaliação**
@@ -268,7 +285,7 @@ Os cenários de referência representam condições normais e adversas; a ediç�
 personalizada utiliza os valores de NORMAL como base.
 """
 
-# Bloco 5 — Thales | Preparação do contexto de avaliação
+# Bloco 5 — Wallace | Preparação do contexto de avaliação
 
 
 """## **Parte 5, Classificação e regras de decisão**
@@ -394,10 +411,10 @@ def diagnostico_recurso(nome, balanco, unidade="kg"):
     ])
 
 
-# Bloco 5 — Thales | Classificações de vento, poeira e temperatura
+# Bloco 5 — Wallace | Classificações de vento, poeira e temperatura
 
 
-# Bloco 5 — Thales | Condições combinadas e avaliação dos riscos
+# Bloco 5 — Wallace | Condições combinadas e avaliação dos riscos
 
 
 """## **Parte 6, Prioridades e recomendações de equilíbrio**
@@ -410,7 +427,73 @@ redução é inversa, com proteção das funções vitais e dos mínimos operaci
 As recomendações relacionam os diagnósticos às possibilidades de economia.
 """
 
-# Bloco 4 — Wallace | Prioridades e recomendações das operações
+# Bloco 4 — Thales | Prioridades e recomendações das operações
+
+
+def recomendar_operacoes(colonia):
+    """Propõe economia para cobrir o déficit, sem alterar os dados da colônia.
+
+    Reduz primeiro as complementares de menor importância, até o mínimo.
+    Não corta cargas essenciais nem tenta obter margem de 10% por novos cortes.
+    Retorna None quando os dados não permitem uma recomendação consistente.
+    """
+    operacoes = avaliar_operacoes(colonia)
+    balanco = avaliar_energia(colonia)
+    if operacoes is None or balanco is None:
+        return None
+    restante = max(0, -balanco["saldo_kwh"])
+    consumos_propostos = consumos_eletricos(colonia)
+    recomendacoes = []
+    # Prioridades únicas e validadas; 4, 3, 2, 1 é a ordem de redução.
+    for operacao in sorted(operacoes, key=lambda item: item["prioridade"], reverse=True):
+        economia = min(restante, operacao["ajustavel_kwh"])
+        if economia <= 0:
+            continue
+        consumo_proposto = operacao["consumo_normal_kwh"] - economia
+        consumos_propostos[operacao["id"]] = consumo_proposto
+        recomendacoes.append({
+            "id": operacao["id"], "nome": operacao["nome"],
+            "prioridade": operacao["prioridade"],
+            "pot_atual_kw": operacao["pot_normal_kw"],
+            "pot_recomendada_kw": max(operacao["minimo_protegido_kw"],
+                                       consumo_proposto / operacao["periodo_h"]),
+            "minimo_protegido_kw": operacao["minimo_protegido_kw"],
+            "economia_kwh": economia,
+            "motivo": "Reduzir o déficit preservando funções essenciais e mínimos",
+        })
+        restante = max(0, restante - economia)
+    proposto = balanco_energetico(balanco["geracao_por_fonte_kwh"], consumos_propostos)
+    return {
+        "balanco_atual": balanco, "balanco_proposto": proposto,
+        "operacoes": operacoes, "recomendacoes": recomendacoes,
+        "economia_maxima_kwh": sum(item["ajustavel_kwh"] for item in operacoes),
+        "economia_proposta_kwh": sum(item["economia_kwh"] for item in recomendacoes),
+        "deficit_remanescente_kwh": max(0, -proposto["saldo_kwh"]),
+        "atende_periodo": proposto["saldo_kwh"] >= -0.000000001,
+    }
+
+
+def diagnostico_operacoes(resultado):
+    """Texto para o relatório e para o menu do Bloco 5; não aplica os cortes."""
+    linhas = ["Recomendações de operações (proposta; cadastro preservado):"]
+    for item in resultado["recomendacoes"]:
+        linhas.append(
+            f"{item['nome']}: {item['pot_atual_kw']:.4f} -> "
+            f"{item['pot_recomendada_kw']:.4f} kW; "
+            f"economia {item['economia_kwh']:.3f} kWh. {item['motivo']}.")
+    if not resultado["recomendacoes"]:
+        linhas.append("Sem redução necessária: o balanço atual atende ao período.")
+    linhas.append(f"Economia possível: {resultado['economia_maxima_kwh']:.3f} kWh")
+    linhas.append(f"Economia proposta: {resultado['economia_proposta_kwh']:.3f} kWh")
+    linhas.append(diagnostico_energetico(resultado["balanco_proposto"]))
+    if not resultado["atende_periodo"]:
+        linhas.append(
+            f"Déficit remanescente: {resultado['deficit_remanescente_kwh']:.3f} kWh. "
+            "A economia não basta; é necessário recompor a geração. "
+            "Não há reserva elétrica modelada nem cortes abaixo dos mínimos.")
+    linhas.append("Economia elétrica não repõe oxigênio ou alimentos. "
+                  "Atendimento agregado em 24 h não garante fornecimento contínuo.")
+    return "\n".join(linhas)
 
 
 """## **Parte 7, Modelos matemáticos e previsão**
@@ -665,6 +748,12 @@ def consumos_eletricos(colonia):
             return None
         if carga.get("periodo_h") != colonia["contexto"]["periodo_h"]:
             return None
+        minimo = carga.get("minimo_protegido_kw")
+        normal = carga.get("pot_normal_kw")
+        if not numero_valido(minimo, minimo=0) or not numero_valido(normal, minimo=0):
+            return None
+        if normal < minimo:
+            return None
         consumo = energia_kwh(carga.get("pot_normal_kw"), carga.get("periodo_h"))
         if consumo is None:
             return None
@@ -672,7 +761,50 @@ def consumos_eletricos(colonia):
     return consumos
 
 
-# Bloco 4 — Wallace | Consumos e parcelas ajustáveis das operações
+# Bloco 4 — Thales | Consumos e parcelas ajustáveis das operações
+
+
+def avaliar_operacoes(colonia):
+    """Calcula consumo normal, protegido e ajustável de cada complementar.
+
+    Exige os quatro IDs do apoio, prioridades inteiras únicas de 1 a 4 e
+    período comum de 24 h. Consumos são informativos: listar_cargas já os
+    inclui uma vez no balanço, sem somar esta lista novamente.
+    """
+    if colonia["contexto"].get("periodo_h") != PERIODO_H:
+        return None
+    operacoes = colonia.get("operacoes")
+    if not isinstance(operacoes, list) or len(operacoes) != 4:
+        return None
+    resultados, ids, prioridades = [], [], []
+    for operacao in operacoes:
+        if not isinstance(operacao, dict):
+            return None
+        identificador = operacao.get("id")
+        prioridade = operacao.get("prioridade")
+        normal = operacao.get("pot_normal_kw")
+        minimo = operacao.get("minimo_protegido_kw")
+        if identificador not in ("ARM", "PES", "MOB", "CON") or identificador in ids:
+            return None
+        if type(prioridade) is not int or not 1 <= prioridade <= 4 or prioridade in prioridades:
+            return None
+        if prioridade != {"ARM": 1, "PES": 2, "MOB": 3, "CON": 4}[identificador]:
+            return None
+        if not isinstance(operacao.get("nome"), str) or not operacao["nome"].strip():
+            return None
+        if not numero_valido(normal, minimo=0) or not numero_valido(minimo, minimo=0):
+            return None
+        if normal < minimo or operacao.get("periodo_h") != PERIODO_H:
+            return None
+        consumo = energia_kwh(normal, PERIODO_H)
+        protegido = energia_kwh(minimo, PERIODO_H)
+        if not numero_valido(consumo, minimo=0) or not numero_valido(protegido, minimo=0):
+            return None
+        resultados.append(dict(operacao, consumo_normal_kwh=consumo,
+                               protegido_kwh=protegido, ajustavel_kwh=consumo - protegido))
+        ids.append(identificador)
+        prioridades.append(prioridade)
+    return resultados
 
 
 """## **Parte 8, Avaliação integrada e menu principal**
@@ -684,10 +816,10 @@ Menu de cenários e edição de dados, com apresentação dos resultados, unidad
 motivos e limites dos modelos.
 """
 
-# Bloco 5 — Thales | Coordenação da avaliação e apresentação dos resultados
+# Bloco 5 — Wallace | Coordenação da avaliação e apresentação dos resultados
 
 
-# Bloco 5 — Thales | Menu e ponto de entrada do programa
+# Bloco 5 — Wallace | Menu e ponto de entrada do programa
 # A definição das funções permanece separada de sua execução.
 
 
@@ -727,8 +859,8 @@ def exemplos_bloco1():
     colonia = criar_colonia()
     resultados.append(conferir("população padrão", colonia["contexto"]["populacao"], 50))
     resultados.append(conferir("janela de análise (h)", colonia["contexto"]["periodo_h"], 24))
-    resultados.append(conferir("cargas cadastradas até o Bloco 3",
-                               len(listar_cargas(colonia)), 3))
+    resultados.append(conferir("cargas cadastradas até o Bloco 4",
+                               len(listar_cargas(colonia)), 7))
     colonia["energia"]["solar"]["pot_solar_kw"] = 1
     resultados.append(conferir("editar uma colônia não muda o padrão",
                                SOLAR_PADRAO["pot_solar_kw"], 120))
@@ -791,6 +923,7 @@ def exemplos_bloco1():
                                balanco_energetico({"solar": 960}, {"total": math.inf}), None))
 
     print(f"\nBloco 1: {resultados.count(True)} de {len(resultados)} conferências OK.")
+    return all(resultados)
 
 # Bloco 2 — Souza | Exemplos de geração eólica e regressão
 
@@ -876,8 +1009,8 @@ def exemplos_bloco2():
     copia_eolica["pares_regressao"][0][1] = 999
     resultados.append(conferir("pares independentes entre cadastros",
                                criar_eolica()["pares_regressao"][0][1], 1.2215))
-    casos = [("NORMAL", 1.00, 8, 1, 477.4872, "VERDE"),
-             ("TEMPESTADE", 0.10, 22, 0, -456.0, "VERMELHO")]
+    casos = [("NORMAL", 1.00, 8, 1, 165.4872, "VERDE"),
+             ("TEMPESTADE", 0.10, 22, 0, -768.0, "VERMELHO")]
     for nome, fator, vento, ativa, saldo_esperado, classe_esperada in casos:
         colonia = criar_colonia()
         colonia["energia"]["solar"]["fator_solar"] = fator
@@ -917,10 +1050,11 @@ def exemplos_bloco3():
                                recursos["alimentos"]["cobertura_dias"], 14.0))
 
     print("\n=== Bloco 3 | Energia com as cargas já cadastradas ===")
-    # Cargas deste exemplo: AUX 48 + O2 288 + ALI 216 = 552 kWh.
+    # Inclui as quatro operações do Bloco 4: 552 + 312 = 864 kWh.
     consumos = consumos_eletricos(colonia)
     resultados.append(conferir("consumos por carga (kWh)", consumos,
-                               {"AUX": 48, "O2": 288, "ALI": 216}))
+                               {"AUX": 48, "O2": 288, "ALI": 216,
+                                "ARM": 96, "PES": 96, "MOB": 72, "CON": 48}))
     solar = colonia["energia"]["solar"]
     # Valor atual modelado do apoio para vento de 8 m/s; não é a previsão.
     colonia["energia"]["eolica"]["potencia_kw"] = 2.8953
@@ -931,9 +1065,9 @@ def exemplos_bloco3():
     }
     balanco = balanco_energetico(geracoes, consumos)
     print(diagnostico_energetico(balanco))
-    resultados.append(conferir("consumo sem repetição (kWh)", balanco["consumo_total_kwh"], 552))
+    resultados.append(conferir("consumo sem repetição (kWh)", balanco["consumo_total_kwh"], 864))
     resultados.append(conferir("saldo solar/eólica com suporte (kWh)",
-                               balanco["saldo_kwh"], 477.4872))
+                               balanco["saldo_kwh"], 165.4872))
 
     print("\n=== Bloco 3 | Falta no período e reserva curta ===")
     colonia["suporte_vida"]["oxigenio"].update(estoque_kg=22.375, entrada_kg_dia=0)
@@ -969,7 +1103,84 @@ def exemplos_bloco3():
     return all(resultados)
 
 
-# Bloco 4 — Wallace | Exemplos das operações e recomendações
+# Bloco 4 — Thales | Exemplos das operações e recomendações
 
 
-# Bloco 5 — Thales | Exemplos de clima, riscos e integração completa
+def exemplos_bloco4():
+    """Conferências integradas, sem depender do menu ou dos cenários do Bloco 5."""
+    resultados = []
+    colonia = criar_colonia()
+    colonia["operacoes"][0]["pot_normal_kw"] = 99
+    resultados.append(conferir("cadastros independentes", criar_operacoes()[0]["pot_normal_kw"], 4))
+    casos = [
+        ("NORMAL", 1.00, 8, 2.8953, 1, 165.4872, 0.0, 0.0),
+        ("BAIXA_GERACAO", 0.80, 6, 1.2215, 1, -66.684, 66.684, 0.0),
+        ("TEMPESTADE", 0.10, 22, 0, 0, -768.0, 180.0, 588.0),
+    ]
+    for nome, fator, vento, potencia, ativa, saldo, economia, deficit in casos:
+        colonia = criar_colonia()
+        colonia["contexto"]["cenario"] = nome
+        colonia["energia"]["solar"]["fator_solar"] = fator
+        colonia["energia"]["eolica"].update(vento_ms=vento, potencia_kw=potencia, ativa=ativa)
+        # Potência atual M da tabela, não resultado da regressão; tempestade indisponível.
+        antes = repr(colonia)
+        proposta = recomendar_operacoes(colonia)
+        print(f"\n=== Bloco 4 | {nome} ===")
+        print(diagnostico_operacoes(proposta))
+        resultados.append(conferir(f"{nome}, consumo total", proposta["balanco_atual"]["consumo_total_kwh"], 864))
+        resultados.append(conferir(f"{nome}, saldo atual", proposta["balanco_atual"]["saldo_kwh"], saldo))
+        resultados.append(conferir(f"{nome}, economia máxima", proposta["economia_maxima_kwh"], 180.0))
+        resultados.append(conferir(f"{nome}, economia proposta", proposta["economia_proposta_kwh"], economia))
+        resultados.append(conferir(f"{nome}, déficit restante", proposta["deficit_remanescente_kwh"], deficit))
+        resultados.append(conferir(f"{nome}, cadastro preservado", repr(colonia) == antes, True))
+        resultados.append(conferir(f"{nome}, mínimos respeitados", all(
+            item["pot_recomendada_kw"] >= item["minimo_protegido_kw"]
+            for item in proposta["recomendacoes"]), True))
+        if nome == "BAIXA_GERACAO":
+            resultados.append(conferir("ordem da redução parcial",
+                [item["id"] for item in proposta["recomendacoes"]], ["CON", "MOB"]))
+            resultados.append(conferir("mobilidade recomendada (kW)",
+                proposta["recomendacoes"][1]["pot_recomendada_kw"], 1.7215))
+            resultados.append(conferir("cobertura sem margem",
+                proposta["balanco_proposto"]["classificacao"], "AMARELO"))
+        if nome == "TEMPESTADE":
+            resultados.append(conferir("ordem completa da redução",
+                [item["id"] for item in proposta["recomendacoes"]], ["CON", "MOB", "PES", "ARM"]))
+            resultados.append(conferir("consumo mínimo (kWh)", proposta["balanco_proposto"]["consumo_total_kwh"], 684.0))
+
+    print("\n=== Bloco 4 | Validação e limites ===")
+    for campo, valor in [("pot_normal_kw", -1), ("pot_normal_kw", math.nan),
+                         ("minimo_protegido_kw", math.inf), ("minimo_protegido_kw", 5),
+                         ("periodo_h", 12), ("prioridade", True), ("id", "AUX")]:
+        colonia = criar_colonia()
+        colonia["operacoes"][0][campo] = valor
+        resultados.append(conferir(f"operação inválida: {campo}={valor}", recomendar_operacoes(colonia), None))
+    colonia = criar_colonia()
+    colonia["operacoes"][1]["id"] = "ARM"
+    resultados.append(conferir("ID duplicado", recomendar_operacoes(colonia), None))
+    colonia = criar_colonia()
+    colonia["contexto"]["periodo_h"] = 12
+    resultados.append(conferir("janela incompatível", recomendar_operacoes(colonia), None))
+    colonia = criar_colonia()
+    colonia["energia"]["solar"]["pot_solar_kw"] = 0
+    colonia["energia"]["eolica"]["ativa"] = 0
+    for operacao in colonia["operacoes"]:
+        operacao["pot_normal_kw"] = operacao["minimo_protegido_kw"]
+    proposta = recomendar_operacoes(colonia)
+    resultados.append(conferir("sem parcela ajustável", proposta["economia_proposta_kwh"], 0.0))
+    resultados.append(conferir("déficit com geração zero e mínimos", proposta["deficit_remanescente_kwh"], 684.0))
+    colonia = criar_colonia()
+    colonia["suporte_vida"]["oxigenio"].update(estoque_kg=22.375, entrada_kg_dia=0)
+    recomendar_operacoes(colonia)
+    resultados.append(conferir("economia não repõe O2", avaliar_suporte_vida(colonia)["oxigenio"]["suficiente"], False))
+    print(f"\nBloco 4: {resultados.count(True)} de {len(resultados)} conferências OK.")
+    return all(resultados)
+
+
+def exemplos_blocos1_a4():
+    """Executa as evidências acumuladas para o repasse ao Bloco 5."""
+    resultados = [exemplos_bloco1(), exemplos_bloco2(), exemplos_bloco3(), exemplos_bloco4()]
+    return all(resultados)
+
+
+# Bloco 5 — Wallace | Exemplos de clima, riscos e integração completa

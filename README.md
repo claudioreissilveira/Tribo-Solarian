@@ -112,6 +112,77 @@ solar, saldo, classificações (inclusive os limites exatos 1,10 e 1,00), consum
 entradas inválidas. Cada conferência aparece como `[OK]` ou `[FALHOU]`; no final, o
 programa mostra quantas deram certo.
 
+Os exemplos acumulados dos quatro blocos podem ser executados a partir da raiz:
+
+```bash
+python -c "import runpy; projeto = runpy.run_path('script/TriboSolarian_Colonia.py'); assert projeto['exemplos_blocos1_a4']()"
+```
+
+O Bloco 2 verifica a geração eólica e a regressão sobre os pares modelados (M),
+mantendo previsão e potência atual separadas. O Bloco 3 verifica demanda, saldo e
+reserva bruta de oxigênio e alimento seco, com as taxas de referência (R) do apoio.
+O Bloco 4 verifica cadastro independente, consumos, prioridades, mínimos, entradas
+inválidas e recomendações sem alteração automática dos dados.
+
+## Operações e recomendações — Bloco 4
+
+Responsável: Thales Martins Oliveira Barros. As quatro operações são parâmetros de
+projeto (P) da seção 5 do material de apoio, todos na janela de 24 horas terrestres.
+
+| ID | Operação | Prioridade | Normal (kW) | Mínimo (kW) | Economia máxima (kWh/24 h) |
+| --- | --- | ---: | ---: | ---: | ---: |
+| ARM | Armazenamento e logística | 1 | 4 | 3 | 24 |
+| PES | Pesquisa e experimentos | 2 | 4 | 1 | 72 |
+| MOB | Mobilidade | 3 | 3 | 1 | 48 |
+| CON | Conforto e áreas comuns | 4 | 2 | 0,5 | 36 |
+
+`criar_colonia()` já inclui as operações. `listar_cargas()` e `consumos_eletricos()`
+reúnem auxiliares, suporte vital e complementares uma única vez, por ID. O consumo
+normal integrado é **864 kWh**, sendo 552 kWh essenciais e 312 kWh complementares.
+O mínimo integrado é **684 kWh** e a economia máxima é **180 kWh**.
+
+`avaliar_operacoes(colonia)` apresenta consumo normal, protegido e parcela ajustável.
+`recomendar_operacoes(colonia)` calcula uma proposta, sem modificar a colônia, na ordem
+**conforto → mobilidade → pesquisa → armazenamento/logística**. A redução para assim
+que o déficit é coberto; não corta as cargas essenciais nem ultrapassa os mínimos.
+O objetivo é atender ao período, sem prometer margem de 10% ou fornecimento contínuo.
+
+Exemplo de uso com a condição BAIXA_GERACAO do apoio:
+
+```python
+colonia = criar_colonia()
+colonia["contexto"]["cenario"] = "BAIXA_GERACAO"
+colonia["energia"]["solar"]["fator_solar"] = 0.80
+colonia["energia"]["eolica"].update(vento_ms=6, potencia_kw=1.2215, ativa=1)
+proposta = recomendar_operacoes(colonia)
+print(diagnostico_operacoes(proposta))
+```
+
+As potências eólicas atuais vêm da tabela modelada do apoio, sem usar a regressão
+para substituir o cenário. A tempestade tem eólica indisponível por escolha
+operacional do exercício; não é uma velocidade de corte certificada.
+
+| Cenário | Geração (kWh) | Saldo inicial (kWh) | Economia proposta (kWh) | Saldo proposto (kWh) |
+| --- | ---: | ---: | ---: | ---: |
+| NORMAL | 1.029,4872 | +165,4872 | 0 | +165,4872 |
+| BAIXA_GERACAO | 797,316 | −66,684 | 66,684 | 0 |
+| TEMPESTADE | 96 | −768 | 180 | −588 |
+
+Em baixa geração, conforto passa de 2 para 0,5 kW e mobilidade de 3 para
+1,7215 kW. O saldo proposto chega a zero, com classificação AMARELO (cobertura 1,00).
+Na tempestade, todas as complementares chegam aos mínimos e ainda faltam 588 kWh.
+A saída declara essa limitação; não propõe cortes abaixo dos mínimos nem inventa
+uma reserva elétrica. Economizar eletricidade não repõe oxigênio ou alimentos.
+
+Os resultados executados estão em [testes/exemplos_blocos1_a4.txt](testes/exemplos_blocos1_a4.txt).
+
+Para o repasse a Wallace, `recomendar_operacoes()` fornece `balanco_atual`,
+`balanco_proposto`, `recomendacoes`, `economia_maxima_kwh`, `economia_proposta_kwh`,
+`deficit_remanescente_kwh` e `atende_periodo`. O menu pode usar
+`diagnostico_operacoes()` para apresentar a proposta. Clima e riscos devem combinar
+esses dados com `avaliar_suporte_vida()`, sem atribuir reposição de recursos a cortes
+elétricos. Os cenários, a edição interativa e o menu permanecem nos espaços do Bloco 5.
+
 ## Simplificações
 
 - O balanço soma as 24 horas: saldo positivo não garante energia durante a noite.

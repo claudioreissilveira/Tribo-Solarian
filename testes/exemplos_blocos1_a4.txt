@@ -1,0 +1,253 @@
+=== Bloco 1 | Estrutura comum ===
+  [OK] população padrão: obtido 50, esperado 50
+  [OK] janela de análise (h): obtido 24, esperado 24
+  [OK] cargas cadastradas até o Bloco 4: obtido 7, esperado 7
+  [OK] editar uma colônia não muda o padrão: obtido 120, esperado 120
+
+=== Bloco 1 | Geração solar (120 kW, 8 h) ===
+  [OK] NORMAL, fator 1,00: obtido 960.0, esperado 960.0
+  [OK] BAIXA_GERACAO, fator 0,80: obtido 768.0, esperado 768.0
+  [OK] TEMPESTADE, fator 0,10: obtido 96.0, esperado 96.0
+
+=== Bloco 1 | Balanço energético (consumo de referência 864 kWh) ===
+-- NORMAL
+Geração total: 960.00 kWh
+Consumo total: 864.00 kWh
+Saldo:         +96.00 kWh
+Cobertura:     1.1111
+Energia:       VERDE - margem de geração no período
+  [OK] NORMAL saldo: obtido 96.0, esperado 96.0
+  [OK] NORMAL classe: obtido 'VERDE', esperado 'VERDE'
+-- BAIXA_GERACAO
+Geração total: 768.00 kWh
+Consumo total: 864.00 kWh
+Saldo:         -96.00 kWh
+Cobertura:     0.8889
+Energia:       VERMELHO - déficit no período; há demanda não atendida no balanço
+  [OK] BAIXA_GERACAO saldo: obtido -96.0, esperado -96.0
+  [OK] BAIXA_GERACAO classe: obtido 'VERMELHO', esperado 'VERMELHO'
+-- TEMPESTADE
+Geração total: 96.00 kWh
+Consumo total: 864.00 kWh
+Saldo:         -768.00 kWh
+Cobertura:     0.1111
+Energia:       VERMELHO - déficit no período; há demanda não atendida no balanço
+  [OK] TEMPESTADE saldo: obtido -768.0, esperado -768.0
+  [OK] TEMPESTADE classe: obtido 'VERMELHO', esperado 'VERMELHO'
+
+=== Bloco 1 | Limites das classificações ===
+  [OK] cobertura 1,10: obtido 'VERDE', esperado 'VERDE'
+  [OK] cobertura 1,00: obtido 'AMARELO', esperado 'AMARELO'
+  [OK] cobertura 0,99: obtido 'VERMELHO', esperado 'VERMELHO'
+  [OK] 950,4 / 864 (= 1,10): obtido 'VERDE', esperado 'VERDE'
+  [OK] 900 / 864: saldo positivo com AMARELO: obtido (True, 'AMARELO'), esperado (True, 'AMARELO')
+
+=== Bloco 1 | Consumo zero ===
+  [OK] cobertura: obtido None, esperado None
+  [OK] classificação: obtido 'NAO SE APLICA', esperado 'NAO SE APLICA'
+  [OK] saldo: obtido 960, esperado 960
+
+=== Bloco 1 | Entradas inválidas (devem devolver None) ===
+  [OK] potência em texto: obtido None, esperado None
+  [OK] potência True: obtido None, esperado None
+  [OK] potência NaN: obtido None, esperado None
+  [OK] potência negativa: obtido None, esperado None
+  [OK] fator 1,5: obtido None, esperado None
+  [OK] 25 horas: obtido None, esperado None
+  [OK] geração negativa no balanço: obtido None, esperado None
+  [OK] consumo infinito no balanço: obtido None, esperado None
+
+Bloco 1: 29 de 29 conferências OK.
+
+=== Bloco 2 | Regressão eólica ===
+Coeficiente a: 1.104960
+Coeficiente b: -5.672940
+Potência prevista para 8,5 m/s: 3.7192 kW
+  [OK] previsão em 8,5 m/s é numérica: obtido True, esperado True
+  [OK] coeficiente angular da reta: obtido 1.1049599999999997, esperado 1.10496
+  [OK] coeficiente linear da reta: obtido -5.672939999999998, esperado -5.67294
+  [OK] potência prevista para 8,5 m/s (kW): obtido 3.719219999999999, esperado 3.71922
+Erro: velocidade fora da faixa de previsão (6 a 10 m/s).
+  [OK] vento fora da faixa de previsão: obtido None, esperado None
+
+=== Bloco 2 | Geração eólica ===
+  [OK] turbina ligada: 3,7192 kW por 24 h: obtido 89.26079999999999, esperado 89.2608
+  [OK] turbina desligada: obtido 0, esperado 0
+  [OK] estado inválido da turbina: obtido None, esperado None
+  [OK] potência negativa: obtido None, esperado None
+  [OK] período acima de 24 horas: obtido None, esperado None
+
+=== Bloco 2 | Validação da regressão ===
+Erro: velocidade do vento inválida.
+  [OK] velocidade negativa nos pares: obtido None, esperado None
+Erro: potência inválida.
+  [OK] potência negativa nos pares: obtido None, esperado None
+Erro: não existe variação nas velocidades do vento.
+  [OK] velocidades repetidas: obtido None, esperado None
+
+=== Bloco 2 | Cadastro e ligação ao balanço energético ===
+  [OK] pares independentes entre cadastros: obtido 1.2215, esperado 1.2215
+-- NORMAL
+Geração total: 1029.49 kWh
+Consumo total: 864.00 kWh
+Saldo:         +165.49 kWh
+Cobertura:     1.1915
+Energia:       VERDE - margem de geração no período
+  [OK] NORMAL, saldo com cargas cadastradas (kWh): obtido 165.48720000000003, esperado 165.4872
+  [OK] NORMAL, classificação energética: obtido 'VERDE', esperado 'VERDE'
+-- TEMPESTADE
+Geração total: 96.00 kWh
+Consumo total: 864.00 kWh
+Saldo:         -768.00 kWh
+Cobertura:     0.1111
+Energia:       VERMELHO - déficit no período; há demanda não atendida no balanço
+  [OK] TEMPESTADE, saldo com cargas cadastradas (kWh): obtido -768.0, esperado -768.0
+  [OK] TEMPESTADE, classificação energética: obtido 'VERMELHO', esperado 'VERMELHO'
+
+Bloco 2: 18 de 18 conferências OK.
+
+=== Bloco 3 | Recursos nas condições normais ===
+Oxigênio: SUFICIENTE - estoque e entrada atendem à demanda das 24 h
+Demanda:       44.750 kg/24 h
+Disponível:    179.250 kg
+Saldo:         +134.500 kg
+Reserva bruta: 3.00 dias - VERDE (sem contar entradas futuras)
+Alimentos: SUFICIENTE - estoque e entrada atendem à demanda das 24 h
+Demanda:       40.000 kg seco/24 h
+Disponível:    590.000 kg seco
+Saldo:         +550.000 kg seco
+Reserva bruta: 14.00 dias - VERDE (sem contar entradas futuras)
+  [OK] demanda diária de O2 (kg): obtido 44.75, esperado 44.75
+  [OK] saldo de O2 (kg): obtido 134.5, esperado 134.5
+  [OK] estoque de O2 em dias: obtido 3.0, esperado 3.0
+  [OK] demanda de alimento seco (kg/dia): obtido 40.0, esperado 40.0
+  [OK] saldo de alimento seco (kg): obtido 550.0, esperado 550.0
+  [OK] estoque de alimentos em dias: obtido 14.0, esperado 14.0
+
+=== Bloco 3 | Energia com as cargas já cadastradas ===
+  [OK] consumos por carga (kWh): obtido {'AUX': 48, 'O2': 288, 'ALI': 216, 'ARM': 96, 'PES': 96, 'MOB': 72, 'CON': 48}, esperado {'AUX': 48, 'O2': 288, 'ALI': 216, 'ARM': 96, 'PES': 96, 'MOB': 72, 'CON': 48}
+Geração total: 1029.49 kWh
+Consumo total: 864.00 kWh
+Saldo:         +165.49 kWh
+Cobertura:     1.1915
+Energia:       VERDE - margem de geração no período
+  [OK] consumo sem repetição (kWh): obtido 864, esperado 864
+  [OK] saldo solar/eólica com suporte (kWh): obtido 165.48720000000003, esperado 165.4872
+
+=== Bloco 3 | Falta no período e reserva curta ===
+Oxigênio: INSUFICIENTE - estoque e entrada não cobrem a demanda das 24 h
+Demanda:       44.750 kg/24 h
+Disponível:    22.375 kg
+Saldo:         -22.375 kg
+Reserva bruta: 0.50 dias - VERMELHO (sem contar entradas futuras)
+Alimentos: SUFICIENTE - estoque e entrada atendem à demanda das 24 h
+Demanda:       40.000 kg seco/24 h
+Disponível:    100.000 kg seco
+Saldo:         +60.000 kg seco
+Reserva bruta: 2.00 dias - VERMELHO (sem contar entradas futuras)
+  [OK] O2 insuficiente: obtido False, esperado False
+  [OK] reserva de alimento curta: obtido 'VERMELHO', esperado 'VERMELHO'
+  [OK] alimento atende às 24 h: obtido True, esperado True
+
+=== Bloco 3 | Limites das reservas ===
+  [OK] O2, estoque para 2 dias: obtido 'VERDE', esperado 'VERDE'
+  [OK] O2, estoque para 1 dias: obtido 'AMARELO', esperado 'AMARELO'
+  [OK] O2, estoque para 0 dias: obtido 'VERMELHO', esperado 'VERMELHO'
+  [OK] alimentos, estoque para 7 dias: obtido 'VERDE', esperado 'VERDE'
+  [OK] alimentos, estoque para 3 dias: obtido 'AMARELO', esperado 'AMARELO'
+  [OK] alimentos, estoque para 0 dias: obtido 'VERMELHO', esperado 'VERMELHO'
+
+=== Bloco 3 | Entradas inválidas ===
+  [OK] população zero: obtido None, esperado None
+  [OK] população fracionada: obtido None, esperado None
+  [OK] estoque negativo: obtido None, esperado None
+  [OK] entrada em texto: obtido None, esperado None
+  [OK] estoque NaN: obtido None, esperado None
+  [OK] entrada infinita: obtido None, esperado None
+  [OK] taxa zero: obtido None, esperado None
+
+Bloco 3: 25 de 25 conferências OK.
+  [OK] cadastros independentes: obtido 4, esperado 4
+
+=== Bloco 4 | NORMAL ===
+Recomendações de operações (proposta; cadastro preservado):
+Sem redução necessária: o balanço atual atende ao período.
+Economia possível: 180.000 kWh
+Economia proposta: 0.000 kWh
+Geração total: 1029.49 kWh
+Consumo total: 864.00 kWh
+Saldo:         +165.49 kWh
+Cobertura:     1.1915
+Energia:       VERDE - margem de geração no período
+Economia elétrica não repõe oxigênio ou alimentos. Atendimento agregado em 24 h não garante fornecimento contínuo.
+  [OK] NORMAL, consumo total: obtido 864, esperado 864
+  [OK] NORMAL, saldo atual: obtido 165.48720000000003, esperado 165.4872
+  [OK] NORMAL, economia máxima: obtido 180.0, esperado 180.0
+  [OK] NORMAL, economia proposta: obtido 0, esperado 0.0
+  [OK] NORMAL, déficit restante: obtido 0, esperado 0.0
+  [OK] NORMAL, cadastro preservado: obtido True, esperado True
+  [OK] NORMAL, mínimos respeitados: obtido True, esperado True
+
+=== Bloco 4 | BAIXA_GERACAO ===
+Recomendações de operações (proposta; cadastro preservado):
+Conforto e áreas comuns: 2.0000 -> 0.5000 kW; economia 36.000 kWh. Reduzir o déficit preservando funções essenciais e mínimos.
+Mobilidade: 3.0000 -> 1.7215 kW; economia 30.684 kWh. Reduzir o déficit preservando funções essenciais e mínimos.
+Economia possível: 180.000 kWh
+Economia proposta: 66.684 kWh
+Geração total: 797.32 kWh
+Consumo total: 797.32 kWh
+Saldo:         +0.00 kWh
+Cobertura:     1.0000
+Energia:       AMARELO - atendimento com margem pequena; atenção à continuidade
+Economia elétrica não repõe oxigênio ou alimentos. Atendimento agregado em 24 h não garante fornecimento contínuo.
+  [OK] BAIXA_GERACAO, consumo total: obtido 864, esperado 864
+  [OK] BAIXA_GERACAO, saldo atual: obtido -66.68399999999997, esperado -66.684
+  [OK] BAIXA_GERACAO, economia máxima: obtido 180.0, esperado 180.0
+  [OK] BAIXA_GERACAO, economia proposta: obtido 66.68399999999997, esperado 66.684
+  [OK] BAIXA_GERACAO, déficit restante: obtido 0, esperado 0.0
+  [OK] BAIXA_GERACAO, cadastro preservado: obtido True, esperado True
+  [OK] BAIXA_GERACAO, mínimos respeitados: obtido True, esperado True
+  [OK] ordem da redução parcial: obtido ['CON', 'MOB'], esperado ['CON', 'MOB']
+  [OK] mobilidade recomendada (kW): obtido 1.7215000000000014, esperado 1.7215
+  [OK] cobertura sem margem: obtido 'AMARELO', esperado 'AMARELO'
+
+=== Bloco 4 | TEMPESTADE ===
+Recomendações de operações (proposta; cadastro preservado):
+Conforto e áreas comuns: 2.0000 -> 0.5000 kW; economia 36.000 kWh. Reduzir o déficit preservando funções essenciais e mínimos.
+Mobilidade: 3.0000 -> 1.0000 kW; economia 48.000 kWh. Reduzir o déficit preservando funções essenciais e mínimos.
+Pesquisa e experimentos: 4.0000 -> 1.0000 kW; economia 72.000 kWh. Reduzir o déficit preservando funções essenciais e mínimos.
+Armazenamento e logística: 4.0000 -> 3.0000 kW; economia 24.000 kWh. Reduzir o déficit preservando funções essenciais e mínimos.
+Economia possível: 180.000 kWh
+Economia proposta: 180.000 kWh
+Geração total: 96.00 kWh
+Consumo total: 684.00 kWh
+Saldo:         -588.00 kWh
+Cobertura:     0.1404
+Energia:       VERMELHO - déficit no período; há demanda não atendida no balanço
+Déficit remanescente: 588.000 kWh. A economia não basta; é necessário recompor a geração. Não há reserva elétrica modelada nem cortes abaixo dos mínimos.
+Economia elétrica não repõe oxigênio ou alimentos. Atendimento agregado em 24 h não garante fornecimento contínuo.
+  [OK] TEMPESTADE, consumo total: obtido 864, esperado 864
+  [OK] TEMPESTADE, saldo atual: obtido -768.0, esperado -768.0
+  [OK] TEMPESTADE, economia máxima: obtido 180.0, esperado 180.0
+  [OK] TEMPESTADE, economia proposta: obtido 180.0, esperado 180.0
+  [OK] TEMPESTADE, déficit restante: obtido 588.0, esperado 588.0
+  [OK] TEMPESTADE, cadastro preservado: obtido True, esperado True
+  [OK] TEMPESTADE, mínimos respeitados: obtido True, esperado True
+  [OK] ordem completa da redução: obtido ['CON', 'MOB', 'PES', 'ARM'], esperado ['CON', 'MOB', 'PES', 'ARM']
+  [OK] consumo mínimo (kWh): obtido 684.0, esperado 684.0
+
+=== Bloco 4 | Validação e limites ===
+  [OK] operação inválida: pot_normal_kw=-1: obtido None, esperado None
+  [OK] operação inválida: pot_normal_kw=nan: obtido None, esperado None
+  [OK] operação inválida: minimo_protegido_kw=inf: obtido None, esperado None
+  [OK] operação inválida: minimo_protegido_kw=5: obtido None, esperado None
+  [OK] operação inválida: periodo_h=12: obtido None, esperado None
+  [OK] operação inválida: prioridade=True: obtido None, esperado None
+  [OK] operação inválida: id=AUX: obtido None, esperado None
+  [OK] ID duplicado: obtido None, esperado None
+  [OK] janela incompatível: obtido None, esperado None
+  [OK] sem parcela ajustável: obtido 0, esperado 0.0
+  [OK] déficit com geração zero e mínimos: obtido 684.0, esperado 684.0
+  [OK] economia não repõe O2: obtido False, esperado False
+
+Bloco 4: 39 de 39 conferências OK.
