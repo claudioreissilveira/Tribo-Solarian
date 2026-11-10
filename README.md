@@ -4,9 +4,58 @@
 
 Equipe Tribo Solarian · versão 0.1
 
-Programa em Python que acompanha a energia de uma colônia de 50 pessoas em Marte,
-sempre olhando um período de **24 horas**. Ele calcula quanta energia é gerada, quanta é
-consumida, mostra o saldo e classifica a situação em Verde, Amarelo ou Vermelho.
+Sistema integrado em Python que acompanha uma colônia de 50 pessoas em Marte, sempre
+olhando um período de **24 horas**. Ele organiza os dados da colônia em uma hierarquia,
+calcula a geração solar e eólica e o consumo, avalia oxigênio, alimentos e clima, estima
+a potência eólica por regressão linear e transforma tudo em decisões claras: alertas,
+reduções de consumo e recomendações ordenadas por urgência.
+
+**Repositório público:** <https://github.com/claudioreissilveira/Tribo-Solarian/tree/3-Colonia>
+
+## Como usar
+
+```
+python script/TriboSolarian_Colonia.py
+```
+
+Só usa Python padrão (biblioteca `math`). O menu mostra os cinco cenários (1 a 5), o modo
+PERSONALIZADO (6) e as conferências de todos os blocos (7). No modo personalizado, escolha
+o módulo, digite os novos valores (Enter mantém o atual) e use `A` para avaliar. Números
+aceitam vírgula (`0,8`). Valor inválido ou fora da faixa é recusado e o programa pergunta
+de novo.
+
+Fluxo: **entrada** (cenário ou valores digitados) → **processamento** (balanços,
+classificações, regressão, regras) → **saída** (diagnóstico, recomendações e riscos).
+
+## Exemplo de entrada e saída
+
+Entrada: opção `3` (TEMPESTADE: vento 22 m/s, poeira τ 4,5, fator solar 0,10, eólica
+desligada). Saída resumida:
+
+```
+[1] Energia
+Geração total: 96.00 kWh
+Consumo total: 864.00 kWh
+Saldo:         -768.00 kWh
+Energia:       VERMELHO - déficit no período; há demanda não atendida no balanço
+
+[1b] Operações complementares (Bloco 4)
+Economia possível: 180.000 kWh
+Economia proposta: 180.000 kWh
+Déficit remanescente: 588.000 kWh. A economia não basta; é necessário recompor a geração.
+
+[2] Previsão eólica (regressão linear, Bloco 2)
+Aviso: vento de 22 m/s fora da faixa de ajuste (6 a 10 m/s): sem previsão numérica
+
+[5] Riscos e recomendações (do mais urgente ao menos urgente)
+1. [CRITICO] Energia: ALERTA: ativar modo economia - todas as complementares no mínimo protegido
+   Dado: saldo -768.00 kWh, cobertura 0.1111
+   Restrição: déficit de 588.00 kWh permanece com as cargas essenciais protegidas
+4. [ALTO] Ambiente: Suspender atividades externas e mobilidade não essencial
+   Dado: vento 22 m/s (VERMELHO), poeira tau 4.5 (VERMELHO)
+```
+
+Os resultados completos dos cinco cenários estão na pasta [testes/](testes/).
 
 ## Como os dados estão organizados
 
@@ -27,7 +76,8 @@ colonia
 │   ├── oxigenio    taxa por pessoa, estoque, reposição, carga elétrica
 │   └── alimentos   taxa por pessoa, estoque, entrada, carga elétrica
 ├── operacoes       lista com as 4 operações complementares
-└── clima           vento, poeira, temperatura
+├── clima           poeira, temperatura (o vento é lido da eólica)
+└── riscos          lista de riscos gerada na avaliação
 ```
 
 Usamos três estruturas:
@@ -35,10 +85,14 @@ Usamos três estruturas:
 - **dicionário dentro de dicionário** para sistemas e subsistemas (energia → solar);
 - **lista** para dados que se repetem (as 4 operações e os 5 pares vento × potência).
 
-**Cenários.** Os cenários (NORMAL, BAIXA_GERACAO, TEMPESTADE, SUPORTE_VIDA_EM_ALERTA,
-MULTIPLAS_RESTRICOES) entram no Bloco 5. `criar_colonia` já cria todos os grupos da
-hierarquia; o Bloco 1 preenche o contexto, a energia solar e os auxiliares, e os outros
-grupos são completados pelos blocos seguintes.
+**Cenários.** Os cinco cenários (NORMAL, BAIXA_GERACAO, TEMPESTADE, SUPORTE_VIDA_EM_ALERTA,
+MULTIPLAS_RESTRICOES) ficam no dicionário `CENARIOS`, só com as entradas da seção 7 do apoio.
+`aplicar_cenario(nome)` cria uma colônia nova e cadastra essas entradas. O modo
+PERSONALIZADO começa com os valores de NORMAL e permite editar um módulo por vez.
+
+**Vento em um lugar só.** A velocidade do vento fica em `energia → eolica → vento_ms`.
+O clima lê o vento de lá, então a geração eólica e a classificação do clima usam sempre
+o mesmo valor.
 
 **Cargas sem repetição.** Cada carga elétrica está guardada em um lugar só: auxiliares em
 `energia`, suporte de oxigênio e de alimentos em `suporte_vida`, e as outras quatro em
@@ -182,6 +236,56 @@ Para o repasse a Wallace, `recomendar_operacoes()` fornece `balanco_atual`,
 `diagnostico_operacoes()` para apresentar a proposta. Clima e riscos devem combinar
 esses dados com `avaliar_suporte_vida()`, sem atribuir reposição de recursos a cortes
 elétricos. Os cenários, a edição interativa e o menu permanecem nos espaços do Bloco 5.
+
+## Clima, riscos e integração — Bloco 5
+
+Responsável: Wallace Gabriel Américo Albuquerque.
+
+**Clima** (seção 6 do apoio). Cada indicador recebe uma classe:
+
+| Indicador | VERDE | AMARELO | VERMELHO |
+|---|---|---|---|
+| Vento (m/s) | 0 a 10 | acima de 10 até 15 | acima de 15 |
+| Poeira (τ) | 0 a 1 | acima de 1 até 3 | acima de 3 |
+| Temperatura externa (°C) | −80 a −20 | −100 a −80 ou −20 a 0 | abaixo de −100 ou acima de 0 |
+
+O clima só descreve o cenário informado. O programa não prevê tempestades.
+
+**Riscos.** `avaliar_riscos` cruza energia, a proposta do Bloco 4 (`recomendar_operacoes`),
+recursos vitais e clima, com condições simples e combinadas. Cada risco mostra o **dado**,
+o **motivo**, a **recomendação** e a **restrição** que continua depois da ação. A lista sai
+ordenada do mais urgente (CRITICO) ao menos urgente (INFO). Principais regras:
+
+- consumo > geração **e** as reduções do Bloco 4 cobrem o déficit → `ALERTA: reduzir consumo`;
+- consumo > geração **e** as reduções não bastam → `ALERTA: ativar modo economia` (CRITICO),
+  informando o déficit que sobra;
+- geração > consumo → `SUGESTÃO: armazenar energia excedente`;
+- fator solar < 0,5 **e** eólica indisponível → as duas fontes comprometidas;
+- O₂ ou alimento insuficiente → reposição imediata (a economia elétrica não repõe recurso);
+- vento **ou** poeira em VERMELHO → suspender atividades externas;
+- duas ou mais frentes adversas (energia, vitais, ambiente) → restrição conjunta (CRITICO).
+
+| Cenário | Energia | Recursos vitais | Clima | Riscos gerados |
+|---|---|---|---|---|
+| NORMAL | VERDE, +165,49 kWh | suficientes | VERDE | INFO: excedente |
+| BAIXA_GERACAO | VERMELHO, −66,68 kWh (resolvido com 66,68 kWh de economia) | suficientes | poeira AMARELO | ALTO, ATENCAO |
+| TEMPESTADE | VERMELHO, −768 kWh (sobram 588 kWh) | suficientes | vento e poeira VERMELHO | CRITICO, ALTO |
+| SUPORTE_VIDA_EM_ALERTA | VERDE, +165,49 kWh | O₂ insuficiente, alimento com reserva curta | VERDE | CRITICO, ALTO, INFO |
+| MULTIPLAS_RESTRICOES | VERMELHO, −768 kWh (sobram 588 kWh) | O₂ insuficiente | vento e poeira VERMELHO | CRITICO, ALTO |
+
+**Previsão integrada.** A reta do Bloco 2 estima a potência eólica para o vento atual,
+sempre separada da potência atual do cenário. Fora de 6 a 10 m/s, o programa mostra um
+aviso em vez de um número. Para O₂ e alimentos há uma projeção condicional: em quantos
+dias o estoque acaba **se** entrada e consumo continuarem iguais.
+
+**Entradas.** `ler_numero` repete a pergunta até receber um número finito dentro da faixa
+do campo (aceita vírgula; Enter mantém o valor). População só aceita inteiro positivo, e a
+potência de uma operação nunca fica abaixo do mínimo protegido. No modo personalizado, a
+potência eólica pode vir da tabela M, da regressão ou ser informada, e a origem é exibida.
+
+`exemplos_bloco5()` confere os limites de vento, poeira e temperatura, os cinco cenários,
+as regras combinadas, a previsão fora da faixa, entradas digitadas inválidas e o modo
+personalizado. A opção 7 do menu roda as conferências dos cinco blocos (172 no total).
 
 ## Simplificações
 
