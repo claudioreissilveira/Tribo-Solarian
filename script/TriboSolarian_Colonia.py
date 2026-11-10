@@ -174,6 +174,59 @@ OPERACOES_PADRAO = [
 
 # Bloco 5 — Wallace | Parâmetros ambientais e cenários
 
+# Faixas ambientais (seção 6), P. Cada faixa é (limite, classe): a primeira
+# condição verdadeira define a classe. Não são limites certificados de operação.
+LIMIARES_VENTO = {"verde_max": 10, "amarelo_max": 15}            # m/s
+LIMIARES_POEIRA = {"verde_max": 1, "amarelo_max": 3}             # tau, adimensional
+LIMIARES_TEMPERATURA = {                                          # °C, externa
+    "verde_min": -80, "verde_max": -20,
+    "amarelo_min": -100, "amarelo_max": 0,
+}
+
+# Clima inicial (cenário NORMAL). O vento fica só em energia → eolica → vento_ms,
+# para que clima e geração eólica usem sempre o mesmo valor (seção 7.3).
+CLIMA_PADRAO = {
+    "poeira_tau": 0.5,
+    "temperatura_externa_c": -60,
+}
+
+# Cenários de entrada (seções 7.1 e 7.2), P. Só entradas: nenhum resultado pronto.
+# o2 e alimentos: (estoque inicial kg, entrada disponível em 24 h kg).
+CENARIOS = {
+    "NORMAL": {
+        "vento_ms": 8, "poeira_tau": 0.5, "temperatura_externa_c": -60,
+        "fator_solar": 1.00, "eolica_ativa": 1,
+        "o2": (134.25, 45), "alimentos": (560, 30),
+    },
+    "BAIXA_GERACAO": {
+        "vento_ms": 6, "poeira_tau": 1.5, "temperatura_externa_c": -70,
+        "fator_solar": 0.80, "eolica_ativa": 1,
+        "o2": (134.25, 45), "alimentos": (560, 30),
+    },
+    "TEMPESTADE": {
+        "vento_ms": 22, "poeira_tau": 4.5, "temperatura_externa_c": -80,
+        "fator_solar": 0.10, "eolica_ativa": 0,
+        "o2": (134.25, 45), "alimentos": (560, 30),
+    },
+    "SUPORTE_VIDA_EM_ALERTA": {
+        "vento_ms": 8, "poeira_tau": 0.5, "temperatura_externa_c": -60,
+        "fator_solar": 1.00, "eolica_ativa": 1,
+        "o2": (22.375, 0), "alimentos": (80, 20),
+    },
+    "MULTIPLAS_RESTRICOES": {
+        "vento_ms": 22, "poeira_tau": 4.5, "temperatura_externa_c": -80,
+        "fator_solar": 0.10, "eolica_ativa": 0,
+        "o2": (22.375, 0), "alimentos": (80, 20),
+    },
+}
+
+# Lista para o menu: a ordem de exibição dos cenários.
+ORDEM_CENARIOS = ["NORMAL", "BAIXA_GERACAO", "TEMPESTADE",
+                  "SUPORTE_VIDA_EM_ALERTA", "MULTIPLAS_RESTRICOES"]
+
+# Ordem de gravidade usada para ordenar os riscos (menor número = mais urgente).
+GRAVIDADE = {"CRITICO": 0, "ALTO": 1, "ATENCAO": 2, "INFO": 3}
+
 
 """## **Parte 2, Módulos e estruturas de dados**
 
@@ -192,7 +245,8 @@ def criar_colonia(populacao=POPULACAO_PADRAO):
 
     A hierarquia reúne contexto, energia, recursos vitais, operações,
     clima e riscos. Os dados energéticos e vitais são inicializados;
-    as operações recebem os padrões; clima e riscos ficam vazios para o Bloco 5.
+    as operações recebem os padrões; o clima recebe os valores de NORMAL e
+    os riscos são preenchidos pela avaliação integrada (Bloco 5).
     """
     colonia = {
         "contexto": {
@@ -207,8 +261,8 @@ def criar_colonia(populacao=POPULACAO_PADRAO):
         },
         "suporte_vida": criar_suporte_vida(),      # Bloco 3
         "operacoes": criar_operacoes(),           # Bloco 4: lista de registros
-        "clima": {},                              # Bloco 5
-        "riscos": [],                             # Bloco 5
+        "clima": criar_clima(),                   # Bloco 5
+        "riscos": [],                             # Bloco 5: preenchida na avaliação
     }
     return colonia
 
@@ -264,6 +318,26 @@ def criar_operacoes():
 
 # Bloco 5 — Wallace | Registros de ambiente e resultados gerais
 
+def criar_clima():
+    """Cria o registro de clima (poeira e temperatura externa).
+
+    O vento não é repetido aqui: fica em energia → eolica → vento_ms e é lido
+    de lá pela avaliação do clima, garantindo um único valor para os módulos.
+    """
+    return dict(CLIMA_PADRAO)
+
+
+def novo_risco(frente, nivel, dado, motivo, recomendacao, restricao=""):
+    """Registro padrão de um risco (seção 9.1): dado, motivo, recomendação."""
+    return {
+        "frente": frente,              # Energia, Recursos vitais, Ambiente, Conjunta
+        "nivel": nivel,                # CRITICO, ALTO, ATENCAO ou INFO
+        "dado": dado,                  # valor que disparou a regra
+        "motivo": motivo,              # por que a regra foi acionada
+        "recomendacao": recomendacao,  # ação clara (saída)
+        "restricao": restricao,        # o que continua limitado depois da ação
+    }
+
 
 """## **Parte 3, Entrada de dados manual**
 
@@ -274,6 +348,151 @@ definidos no apoio. A interação com o operador é separada dos cálculos.
 """
 
 # Bloco 5 — Wallace | Leitura, validação e edição dos campos
+
+def converter_numero(texto, inteiro=False):
+    """Converte o texto digitado em número; aceita vírgula decimal ("0,8").
+
+    Devolve None se o texto não for um número finito (ex.: "abc", "nan", "inf").
+    """
+    texto = texto.strip().replace(",", ".")
+    try:
+        valor = int(texto) if inteiro else float(texto)
+    except ValueError:
+        return None
+    if not numero_valido(valor):
+        return None
+    return valor
+
+
+def ler_numero(mensagem, atual, minimo=None, maximo=None, inteiro=False, ler=input):
+    """Pede um número até receber um valor válido. Enter mantém o valor atual.
+
+    'ler' é a função de leitura: input() no uso normal, ou uma lista simulada
+    nos exemplos, para registrar entradas inválidas sem digitar.
+    """
+    faixa = ""
+    if minimo is not None and maximo is not None:
+        faixa = f" [{minimo} a {maximo}]"
+    elif minimo is not None:
+        faixa = f" [mínimo {minimo}]"
+    while True:
+        texto = ler(f"{mensagem}{faixa} (atual {atual}): ")
+        if texto.strip() == "":
+            return atual
+        valor = converter_numero(texto, inteiro)
+        if valor is None:
+            tipo = "um número inteiro" if inteiro else "um número"
+            print(f"  Entrada inválida: digite {tipo}.")
+        elif not numero_valido(valor, minimo, maximo):
+            print(f"  Fora do intervalo permitido{faixa}.")
+        else:
+            return valor
+
+
+# Campos editáveis por módulo: (rótulo, caminho na hierarquia, mínimo, máximo, inteiro).
+# O caminho é uma lista de chaves, navegada por obter_campo e definir_campo.
+CAMPOS_EDITAVEIS = {
+    "Contexto": [
+        ("População (pessoas)", ["contexto", "populacao"], 1, None, True),
+    ],
+    "Energia solar": [
+        ("Potência solar (kW)", ["energia", "solar", "pot_solar_kw"], 0, None, False),
+        ("Horas equivalentes (h)", ["energia", "solar", "horas_solares"], 0, 24, False),
+        ("Fator solar (0 a 1)", ["energia", "solar", "fator_solar"], 0, 1, False),
+    ],
+    "Energia eólica": [
+        ("Eólica ativa (1 = sim, 0 = não)", ["energia", "eolica", "ativa"], 0, 1, True),
+        ("Velocidade do vento (m/s)", ["energia", "eolica", "vento_ms"], 0, None, False),
+    ],
+    "Oxigênio": [
+        ("Estoque de O2 (kg)", ["suporte_vida", "oxigenio", "estoque_kg"], 0, None, False),
+        ("Entrada de O2 em 24 h (kg)", ["suporte_vida", "oxigenio", "entrada_kg_dia"], 0, None, False),
+    ],
+    "Alimentos": [
+        ("Estoque de alimento (kg seco)", ["suporte_vida", "alimentos", "estoque_kg"], 0, None, False),
+        ("Entrada de alimento em 24 h (kg seco)", ["suporte_vida", "alimentos", "entrada_kg_dia"], 0, None, False),
+    ],
+    "Clima": [
+        ("Poeira (tau)", ["clima", "poeira_tau"], 0, None, False),
+        ("Temperatura externa (°C)", ["clima", "temperatura_externa_c"], None, None, False),
+    ],
+}
+
+
+def obter_campo(colonia, caminho):
+    """Navega pela hierarquia: ["energia", "solar", "fator_solar"] -> valor."""
+    nivel = colonia
+    for chave in caminho:
+        nivel = nivel[chave]
+    return nivel
+
+
+def definir_campo(colonia, caminho, valor):
+    """Grava o valor no fim do caminho da hierarquia."""
+    nivel = colonia
+    for chave in caminho[:-1]:
+        nivel = nivel[chave]
+    nivel[caminho[-1]] = valor
+
+
+def editar_modulo(colonia, modulo, ler=input):
+    """Edita os campos de um módulo, validando unidade e domínio de cada um."""
+    print(f"\n-- Editando: {modulo} (Enter mantém o valor atual)")
+    for rotulo, caminho, minimo, maximo, inteiro in CAMPOS_EDITAVEIS[modulo]:
+        atual = obter_campo(colonia, caminho)
+        valor = ler_numero(rotulo, atual, minimo, maximo, inteiro, ler)
+        definir_campo(colonia, caminho, valor)
+    if modulo == "Energia eólica":
+        editar_potencia_eolica(colonia, ler)
+    colonia["contexto"]["cenario"] = "PERSONALIZADO"
+
+
+def editar_potencia_eolica(colonia, ler=input):
+    """Define a potência eólica atual e registra a sua origem (seção 7.3).
+
+    1 = tabela M da seção 8 (só se o vento estiver na tabela);
+    2 = estimativa da regressão (só entre 6 e 10 m/s);
+    3 = valor informado pelo operador.
+    """
+    eolica = colonia["energia"]["eolica"]
+    if eolica["ativa"] == 0:
+        eolica["origem_potencia"] = "eólica indisponível no período"
+        return
+    print("Origem da potência eólica: 1 = tabela M | 2 = regressão | 3 = informar")
+    while True:
+        opcao = ler("Opção: ").strip()
+        if opcao == "1":
+            tabela = potencia_tabela(eolica["pares_regressao"], eolica["vento_ms"])
+            if tabela is None:
+                print("  O vento atual não está na tabela da seção 8 (6, 7, 8, 9 ou 10 m/s).")
+                continue
+            eolica["potencia_kw"] = tabela
+            eolica["origem_potencia"] = "tabela M da seção 8"
+            return
+        if opcao == "2":
+            previsao = previsao_eolica(colonia)
+            if previsao["potencia_kw"] is None:
+                print(f"  {previsao['aviso']}")
+                continue
+            eolica["potencia_kw"] = previsao["potencia_kw"]
+            eolica["origem_potencia"] = "estimada pela regressão"
+            return
+        if opcao == "3":
+            eolica["potencia_kw"] = ler_numero("Potência eólica (kW)", eolica["potencia_kw"],
+                                               0, None, False, ler)
+            eolica["origem_potencia"] = "informada pelo operador"
+            return
+        print("  Opção inválida: digite 1, 2 ou 3.")
+
+
+def editar_operacoes(colonia, ler=input):
+    """Edita a potência normal das operações; nunca abaixo do mínimo protegido."""
+    print("\n-- Editando: Operações complementares (Enter mantém o valor atual)")
+    for operacao in colonia["operacoes"]:
+        operacao["pot_normal_kw"] = ler_numero(
+            f"{operacao['nome']}, potência normal (kW)", operacao["pot_normal_kw"],
+            operacao["minimo_protegido_kw"], None, False, ler)
+    colonia["contexto"]["cenario"] = "PERSONALIZADO"
 
 
 """## **Parte 4, Preparação do cenário e dos dados de avaliação**
@@ -286,6 +505,49 @@ personalizada utiliza os valores de NORMAL como base.
 """
 
 # Bloco 5 — Wallace | Preparação do contexto de avaliação
+
+def potencia_tabela(pares, vento_ms):
+    """Potência M da seção 8 para um vento da tabela; None se não estiver nela."""
+    for vento, potencia in pares:
+        if vento == vento_ms:
+            return potencia
+    return None
+
+
+def aplicar_cenario(nome, populacao=POPULACAO_PADRAO):
+    """Cria uma colônia nova e cadastra as entradas do cenário (seção 7).
+
+    População, cargas e taxas por pessoa ficam iguais às seções anteriores.
+    Com a eólica ativa, a potência atual vem da tabela M do vento do cenário;
+    com a eólica inativa, a geração atual é indisponível (não é previsão).
+    PERSONALIZADO começa com os valores de NORMAL.
+    """
+    base = "NORMAL" if nome == "PERSONALIZADO" else nome
+    if base not in CENARIOS:
+        return None
+    dados = CENARIOS[base]
+    colonia = criar_colonia(populacao)
+    colonia["contexto"]["cenario"] = nome
+
+    colonia["energia"]["solar"]["fator_solar"] = dados["fator_solar"]
+    eolica = colonia["energia"]["eolica"]
+    eolica["vento_ms"] = dados["vento_ms"]
+    eolica["ativa"] = dados["eolica_ativa"]
+    if eolica["ativa"] == 1:
+        eolica["potencia_kw"] = potencia_tabela(eolica["pares_regressao"], eolica["vento_ms"])
+        eolica["origem_potencia"] = "tabela M da seção 8"
+    else:
+        eolica["potencia_kw"] = 0
+        eolica["origem_potencia"] = "indisponível no período, decisão operacional P"
+
+    colonia["clima"]["poeira_tau"] = dados["poeira_tau"]
+    colonia["clima"]["temperatura_externa_c"] = dados["temperatura_externa_c"]
+
+    oxigenio = colonia["suporte_vida"]["oxigenio"]
+    oxigenio["estoque_kg"], oxigenio["entrada_kg_dia"] = dados["o2"]
+    alimentos = colonia["suporte_vida"]["alimentos"]
+    alimentos["estoque_kg"], alimentos["entrada_kg_dia"] = dados["alimentos"]
+    return colonia
 
 
 """## **Parte 5, Classificação e regras de decisão**
@@ -413,8 +675,192 @@ def diagnostico_recurso(nome, balanco, unidade="kg"):
 
 # Bloco 5 — Wallace | Classificações de vento, poeira e temperatura
 
+def classificar_vento(vento_ms):
+    """Seção 6.1: VERDE 0 a 10 | AMARELO acima de 10 até 15 | VERMELHO acima de 15."""
+    if not numero_valido(vento_ms, minimo=0):
+        return None
+    if vento_ms <= LIMIARES_VENTO["verde_max"]:
+        return "VERDE"
+    elif vento_ms <= LIMIARES_VENTO["amarelo_max"]:
+        return "AMARELO"
+    else:
+        return "VERMELHO"
+
+
+def classificar_poeira(tau):
+    """Seção 6.2: VERDE 0 a 1 | AMARELO acima de 1 até 3 | VERMELHO acima de 3."""
+    if not numero_valido(tau, minimo=0):
+        return None
+    if tau <= LIMIARES_POEIRA["verde_max"]:
+        return "VERDE"
+    elif tau <= LIMIARES_POEIRA["amarelo_max"]:
+        return "AMARELO"
+    else:
+        return "VERMELHO"
+
+
+def classificar_temperatura(temp_c):
+    """Seção 6.3 (temperatura externa): VERDE de -80 a -20 °C;
+    AMARELO de -100 até antes de -80, ou acima de -20 até 0; VERMELHO fora disso."""
+    if not numero_valido(temp_c):
+        return None
+    t = LIMIARES_TEMPERATURA
+    if t["verde_min"] <= temp_c <= t["verde_max"]:
+        return "VERDE"
+    elif t["amarelo_min"] <= temp_c < t["verde_min"] or t["verde_max"] < temp_c <= t["amarelo_max"]:
+        return "AMARELO"
+    else:
+        return "VERMELHO"
+
+
+def avaliar_clima(colonia):
+    """Classifica o clima informado. Descreve o cenário; não prevê tempestades."""
+    vento = colonia["energia"]["eolica"]["vento_ms"]
+    poeira = colonia["clima"]["poeira_tau"]
+    temperatura = colonia["clima"]["temperatura_externa_c"]
+    resultado = {
+        "vento": {"valor": vento, "unidade": "m/s", "classe": classificar_vento(vento)},
+        "poeira": {"valor": poeira, "unidade": "tau", "classe": classificar_poeira(poeira)},
+        "temperatura": {"valor": temperatura, "unidade": "°C",
+                        "classe": classificar_temperatura(temperatura)},
+    }
+    for indicador in resultado.values():
+        if indicador["classe"] is None:
+            return None
+    return resultado
+
 
 # Bloco 5 — Wallace | Condições combinadas e avaliação dos riscos
+
+def avaliar_riscos(colonia, energia, vitais, clima, plano):
+    """Cruza energia, recursos vitais e clima (seção 9.2) e devolve a lista de riscos.
+
+    Cada regra é uma condição simples ou combinada (and / or). A saída de cada
+    risco traz o dado relevante, o motivo e a recomendação, não só uma cor.
+    'plano' é o resultado de recomendar_operacoes (Bloco 4, Parte 6).
+    """
+    riscos = []
+    solar = colonia["energia"]["solar"]
+    eolica = colonia["energia"]["eolica"]
+    classe_energia = energia["classificacao"]
+    saldo = energia["saldo_kwh"]
+
+    # Energia: déficit (consumo > geração) ---------------------------------------
+    deficit = classe_energia == "VERMELHO"
+    resolvido = plano is not None and plano["atende_periodo"]
+    if deficit and resolvido:
+        riscos.append(novo_risco(
+            "Energia", "ALTO",
+            f"saldo {saldo:+.2f} kWh, cobertura {energia['cobertura']:.4f}",
+            "consumo maior que geração no período",
+            "ALERTA: reduzir consumo - aplicar as reduções da Parte 6 "
+            f"(economia de {plano['economia_proposta_kwh']:.2f} kWh)",
+            "operações complementares funcionando em parte durante o período"))
+    elif deficit:
+        restante = plano["deficit_remanescente_kwh"] if plano else -saldo
+        riscos.append(novo_risco(
+            "Energia", "CRITICO",
+            f"saldo {saldo:+.2f} kWh, cobertura {energia['cobertura']:.4f}",
+            "consumo maior que geração e a economia possível não cobre o déficit",
+            "ALERTA: ativar modo economia - todas as complementares no mínimo protegido",
+            f"déficit de {restante:.2f} kWh permanece com as cargas essenciais protegidas"))
+    elif classe_energia == "AMARELO":
+        riscos.append(novo_risco(
+            "Energia", "ATENCAO",
+            f"saldo {saldo:+.2f} kWh, cobertura {energia['cobertura']:.4f}",
+            "geração atende o consumo com margem menor que 10%",
+            "ATENÇÃO: adiar cargas não essenciais para recuperar a margem"))
+    elif classe_energia == "VERDE":
+        riscos.append(novo_risco(
+            "Energia", "INFO",
+            f"saldo {saldo:+.2f} kWh, cobertura {energia['cobertura']:.4f}",
+            "geração maior que consumo: possível desperdício",
+            "SUGESTÃO: armazenar energia excedente ou programar cargas adiáveis "
+            "neste período",
+            "reserva elétrica (baterias) não faz parte do modelo"))
+
+    # Fontes: as duas comprometidas ao mesmo tempo --------------------------------
+    if solar["fator_solar"] < 0.5 and eolica["ativa"] == 0:
+        riscos.append(novo_risco(
+            "Energia", "ALTO",
+            f"fator solar {solar['fator_solar']:.2f}, eólica indisponível",
+            "solar reduzida e eólica fora de operação ao mesmo tempo",
+            "Priorizar suporte à vida e auxiliares; não iniciar novas cargas",
+            "sem segunda fonte para compensar a queda solar"))
+
+    # Recursos vitais -------------------------------------------------------------
+    nomes = {"oxigenio": "O2", "alimentos": "Alimentos"}
+    for chave, rotulo in nomes.items():
+        recurso = vitais[chave]
+        unidade = "kg seco" if chave == "alimentos" else "kg"
+        dado = (f"saldo {recurso['saldo_kg']:+.3f} {unidade}, "
+                f"reserva {recurso['cobertura_dias']:.2f} dias")
+        if not recurso["suficiente"]:
+            riscos.append(novo_risco(
+                "Recursos vitais", "CRITICO", dado,
+                f"estoque e entrada de {rotulo} não cobrem a demanda de 24 h",
+                f"ALERTA: providenciar reposição de {rotulo} imediatamente",
+                "economia elétrica não repõe o recurso"))
+        elif recurso["classificacao"] == "VERMELHO":
+            riscos.append(novo_risco(
+                "Recursos vitais", "ALTO", dado,
+                f"{rotulo} atende o período, mas a reserva bruta está abaixo da política",
+                f"Programar reposição de {rotulo} e acompanhar a entrada diária"))
+        elif recurso["classificacao"] == "AMARELO":
+            riscos.append(novo_risco(
+                "Recursos vitais", "ATENCAO", dado,
+                f"reserva curta de {rotulo}",
+                f"Acompanhar a reposição de {rotulo}"))
+
+    # Ambiente --------------------------------------------------------------------
+    vento = clima["vento"]
+    poeira = clima["poeira"]
+    temperatura = clima["temperatura"]
+    if vento["classe"] == "VERMELHO" or poeira["classe"] == "VERMELHO":
+        riscos.append(novo_risco(
+            "Ambiente", "ALTO",
+            f"vento {vento['valor']} m/s ({vento['classe']}), "
+            f"poeira tau {poeira['valor']} ({poeira['classe']})",
+            "condição externa adversa no exercício",
+            "Suspender atividades externas e mobilidade não essencial",
+            "transporte de emergência e abastecimento vital mantidos"))
+    elif vento["classe"] == "AMARELO" or poeira["classe"] == "AMARELO":
+        riscos.append(novo_risco(
+            "Ambiente", "ATENCAO",
+            f"vento {vento['valor']} m/s ({vento['classe']}), "
+            f"poeira tau {poeira['valor']} ({poeira['classe']})",
+            "condição externa mais exigente",
+            "Limitar saídas externas às necessárias"))
+    if temperatura["classe"] != "VERDE":
+        riscos.append(novo_risco(
+            "Ambiente", "ATENCAO" if temperatura["classe"] == "AMARELO" else "ALTO",
+            f"temperatura externa {temperatura['valor']} °C ({temperatura['classe']})",
+            "fora da faixa externa de referência",
+            "Reduzir a exposição de pessoas e equipamentos no exterior"))
+
+    # Restrições conjuntas: problemas de natureza diferente ao mesmo tempo ---------
+    energia_ruim = classe_energia == "VERMELHO"
+    vital_ruim = (not vitais["oxigenio"]["suficiente"]
+                  or not vitais["alimentos"]["suficiente"]
+                  or vitais["oxigenio"]["classificacao"] == "VERMELHO"
+                  or vitais["alimentos"]["classificacao"] == "VERMELHO")
+    ambiente_ruim = vento["classe"] == "VERMELHO" or poeira["classe"] == "VERMELHO"
+    frentes_adversas = [energia_ruim, vital_ruim, ambiente_ruim].count(True)
+    if frentes_adversas >= 2:
+        if vital_ruim:
+            acao = "Tratar primeiro a reposição de O2/alimentos, depois a energia"
+        else:
+            acao = "Proteger suporte à vida e auxiliares; demais operações no mínimo"
+        riscos.append(novo_risco(
+            "Conjunta", "CRITICO",
+            f"{frentes_adversas} frentes adversas "
+            f"(energia: {energia_ruim}, vitais: {vital_ruim}, ambiente: {ambiente_ruim})",
+            "problemas de natureza diferente acontecendo juntos",
+            acao,
+            "a economia elétrica não resolve falta de recurso vital nem o clima"))
+
+    riscos.sort(key=lambda risco: GRAVIDADE[risco["nivel"]])
+    return riscos
 
 
 """## **Parte 6, Prioridades e recomendações de equilíbrio**
@@ -807,6 +1253,43 @@ def avaliar_operacoes(colonia):
     return resultados
 
 
+# Bloco 5 — Wallace | Previsão integrada e projeção condicional dos estoques
+
+def previsao_eolica(colonia):
+    """Usa a reta do Bloco 2 para estimar a potência no vento atual.
+
+    Fica separada da potência atual do cenário (seção 8.2). Fora de 6 a 10 m/s,
+    devolve só um aviso, sem número, para não extrapolar a reta.
+    """
+    eolica = colonia["energia"]["eolica"]
+    vento = eolica["vento_ms"]
+    resultado = {"vento_ms": vento, "a": None, "b": None,
+                 "potencia_kw": None, "energia_kwh": None, "aviso": ""}
+    ajuste = ajustar_reta(eolica["pares_regressao"])
+    if ajuste is None:
+        resultado["aviso"] = "regressão não ajustada: pares inválidos"
+        return resultado
+    resultado["a"], resultado["b"] = ajuste
+    if not numero_valido(vento, minimo=6, maximo=10):
+        resultado["aviso"] = (f"vento de {vento} m/s fora da faixa de ajuste (6 a 10 m/s): "
+                              "sem previsão numérica")
+        return resultado
+    a, b = ajuste
+    potencia = a * vento + b
+    resultado["potencia_kw"] = potencia
+    resultado["energia_kwh"] = potencia * eolica["horas"]
+    return resultado
+
+
+def projecao_estoque(balanco):
+    """Projeção condicional: em quantos dias o estoque acaba SE entrada e consumo
+    se mantiverem iguais. Não é previsão de quando algo vai acontecer."""
+    perda_dia = balanco["demanda_kg_dia"] - balanco["entrada_kg_dia"]
+    if perda_dia <= 0:
+        return None   # entrada cobre a demanda: o estoque não diminui
+    return balanco["estoque_kg"] / perda_dia
+
+
 """## **Parte 8, Avaliação integrada e menu principal**
 
 Material de apoio, seções 9 e 10.
@@ -818,9 +1301,140 @@ motivos e limites dos modelos.
 
 # Bloco 5 — Wallace | Coordenação da avaliação e apresentação dos resultados
 
+def avaliacao_integrada(colonia):
+    """Entrada → processamento → saída: reúne todos os módulos numa só avaliação.
+
+    Devolve um dicionário com energia, plano de redução, recursos vitais, clima,
+    previsão eólica e riscos, ou None se algum dado estiver inválido.
+    Não altera a colônia além de guardar a lista de riscos.
+    """
+    energia = avaliar_energia(colonia)
+    vitais = avaliar_suporte_vida(colonia)
+    clima = avaliar_clima(colonia)
+    plano = recomendar_operacoes(colonia)          # Bloco 4
+    if energia is None or vitais is None or clima is None or plano is None:
+        return None
+    previsao = previsao_eolica(colonia)
+    riscos = avaliar_riscos(colonia, energia, vitais, clima, plano)
+    colonia["riscos"] = riscos
+    return {
+        "energia": energia,
+        "plano": plano,
+        "vitais": vitais,
+        "clima": clima,
+        "previsao": previsao,
+        "riscos": riscos,
+    }
+
+
+def apresentar_resultados(colonia, avaliacao):
+    """Mostra a avaliação com unidades, motivos e limites dos modelos."""
+    contexto = colonia["contexto"]
+    eolica = colonia["energia"]["eolica"]
+    print("\n" + "=" * 66)
+    print(f"CENÁRIO {contexto['cenario']} | {contexto['populacao']} pessoas | "
+          f"janela de {contexto['periodo_h']} h")
+    print("=" * 66)
+
+    print("\n[1] Energia")
+    print(diagnostico_energetico(avaliacao["energia"]))
+    print(f"Eólica atual:  {eolica['potencia_kw']:.4f} kW ({eolica.get('origem_potencia', 'padrão')})")
+
+    print("\n[1b] Operações complementares (Bloco 4)")
+    print(diagnostico_operacoes(avaliacao["plano"]))
+
+    print("\n[2] Previsão eólica (regressão linear, Bloco 2)")
+    previsao = avaliacao["previsao"]
+    if previsao["a"] is not None:
+        print(f"Reta: potência = {previsao['a']:.5f} x vento {previsao['b']:+.5f}")
+    if previsao["potencia_kw"] is None:
+        print(f"Aviso: {previsao['aviso']}")
+    else:
+        print(f"Vento {previsao['vento_ms']} m/s -> previsão de {previsao['potencia_kw']:.4f} kW "
+              f"({previsao['energia_kwh']:.2f} kWh em {eolica['horas']} h)")
+
+    print("\n[3] Recursos vitais")
+    vitais = avaliacao["vitais"]
+    print(diagnostico_recurso("Oxigênio", vitais["oxigenio"]))
+    print(diagnostico_recurso("Alimentos", vitais["alimentos"], "kg seco"))
+    for chave, rotulo in (("oxigenio", "O2"), ("alimentos", "Alimentos")):
+        dias = projecao_estoque(vitais[chave])
+        if dias is not None:
+            print(f"Projeção condicional ({rotulo}): se entrada e consumo se mantiverem, "
+                  f"o estoque dura {dias:.2f} dias")
+
+    print("\n[4] Clima")
+    for nome, indicador in avaliacao["clima"].items():
+        print(f"{nome.capitalize():12} {indicador['valor']} {indicador['unidade']} - {indicador['classe']}")
+
+    print("\n[5] Riscos e recomendações (do mais urgente ao menos urgente)")
+    for numero, risco in enumerate(avaliacao["riscos"], start=1):
+        print(f"{numero}. [{risco['nivel']}] {risco['frente']}: {risco['recomendacao']}")
+        print(f"   Dado: {risco['dado']}")
+        print(f"   Motivo: {risco['motivo']}")
+        if risco["restricao"]:
+            print(f"   Restrição: {risco['restricao']}")
+    print("\nLimites: balanço agregado de 24 h, sem baterias; valores P/M do exercício.")
+
 
 # Bloco 5 — Wallace | Menu e ponto de entrada do programa
 # A definição das funções permanece separada de sua execução.
+
+def avaliar_e_mostrar(colonia):
+    avaliacao = avaliacao_integrada(colonia)
+    if avaliacao is None:
+        print("Não foi possível avaliar: há dado inválido no cadastro.")
+        return None
+    apresentar_resultados(colonia, avaliacao)
+    return avaliacao
+
+
+def menu_personalizado(colonia, ler=input):
+    """Modo PERSONALIZADO: parte de NORMAL e edita um módulo por vez."""
+    modulos = list(CAMPOS_EDITAVEIS) + ["Operações"]
+    while True:
+        print("\nPERSONALIZADO | escolha o módulo para editar")
+        for numero, modulo in enumerate(modulos, start=1):
+            print(f"  {numero}. {modulo}")
+        print("  A. Avaliar  |  0. Voltar")
+        opcao = ler("Opção: ").strip().upper()
+        if opcao == "0":
+            return
+        if opcao == "A":
+            avaliar_e_mostrar(colonia)
+            continue
+        numero = converter_numero(opcao, inteiro=True)
+        if numero is None or not 1 <= numero <= len(modulos):
+            print("  Opção inválida.")
+            continue
+        modulo = modulos[numero - 1]
+        if modulo == "Operações":
+            editar_operacoes(colonia, ler)
+        else:
+            editar_modulo(colonia, modulo, ler)
+
+
+def menu_principal(ler=input):
+    """Menu do sistema: cinco cenários, modo personalizado e conferências."""
+    while True:
+        print("\n=== COLÔNIA AURORA SIGER | Sistema integrado ===")
+        for numero, nome in enumerate(ORDEM_CENARIOS, start=1):
+            print(f"  {numero}. {nome}")
+        print("  6. PERSONALIZADO (parte de NORMAL)")
+        print("  7. Executar conferências (exemplos dos blocos)")
+        print("  0. Sair")
+        opcao = ler("Opção: ").strip()
+        if opcao == "0":
+            print("Encerrando o sistema.")
+            return
+        if opcao in ("1", "2", "3", "4", "5"):
+            avaliar_e_mostrar(aplicar_cenario(ORDEM_CENARIOS[int(opcao) - 1]))
+        elif opcao == "6":
+            menu_personalizado(aplicar_cenario("PERSONALIZADO"), ler)
+        elif opcao == "7":
+            executar_exemplos()
+        else:
+            print("  Opção inválida: digite um número de 0 a 7.")
 
 
 """## **Parte 9, Exemplos de execução**
@@ -1184,3 +1798,141 @@ def exemplos_blocos1_a4():
 
 
 # Bloco 5 — Wallace | Exemplos de clima, riscos e integração completa
+
+def leitor_simulado(respostas):
+    """Simula o teclado: devolve uma resposta por chamada e mostra o que foi 'digitado'."""
+    fila = list(respostas)
+
+    def ler(mensagem):
+        resposta = fila.pop(0)
+        print(f"{mensagem}{resposta}")
+        return resposta
+    return ler
+
+
+def exemplos_bloco5():
+    """Conferências de clima, cenários, riscos combinados, entradas e integração."""
+    resultados = []
+
+    print("\n=== Bloco 5 | Limites das classificações ambientais ===")
+    for vento, esperado in [(0, "VERDE"), (10, "VERDE"), (10.1, "AMARELO"),
+                            (15, "AMARELO"), (15.1, "VERMELHO"), (22, "VERMELHO")]:
+        resultados.append(conferir(f"vento {vento} m/s", classificar_vento(vento), esperado))
+    for tau, esperado in [(1, "VERDE"), (1.5, "AMARELO"), (3, "AMARELO"), (4.5, "VERMELHO")]:
+        resultados.append(conferir(f"poeira tau {tau}", classificar_poeira(tau), esperado))
+    for temp, esperado in [(-80, "VERDE"), (-20, "VERDE"), (-80.1, "AMARELO"),
+                           (-100, "AMARELO"), (-19, "AMARELO"), (0, "AMARELO"),
+                           (-101, "VERMELHO"), (1, "VERMELHO")]:
+        resultados.append(conferir(f"temperatura {temp} °C",
+                                   classificar_temperatura(temp), esperado))
+    for descricao, valor in [("vento negativo", classificar_vento(-1)),
+                             ("poeira em texto", classificar_poeira("2")),
+                             ("temperatura NaN", classificar_temperatura(math.nan))]:
+        resultados.append(conferir(descricao, valor, None))
+
+    print("\n=== Bloco 5 | Cinco cenários de referência ===")
+    # (cenário, saldo de energia kWh, classe, déficit após reduções, níveis esperados)
+    casos = [
+        ("NORMAL", 165.4872, "VERDE", 0, {"INFO"}),
+        ("BAIXA_GERACAO", -66.684, "VERMELHO", 0, {"ALTO", "ATENCAO"}),
+        ("TEMPESTADE", -768.0, "VERMELHO", 588.0, {"CRITICO", "ALTO"}),
+        ("SUPORTE_VIDA_EM_ALERTA", 165.4872, "VERDE", 0, {"CRITICO", "ALTO", "INFO"}),
+        ("MULTIPLAS_RESTRICOES", -768.0, "VERMELHO", 588.0, {"CRITICO", "ALTO"}),
+    ]
+    for nome, saldo, classe, restante, niveis in casos:
+        colonia = aplicar_cenario(nome)
+        avaliacao = avaliacao_integrada(colonia)
+        print(f"-- {nome}")
+        resultados.append(conferir(f"{nome}, saldo (kWh)", avaliacao["energia"]["saldo_kwh"], saldo))
+        resultados.append(conferir(f"{nome}, classe energética",
+                                   avaliacao["energia"]["classificacao"], classe))
+        resultados.append(conferir(f"{nome}, déficit após reduções (kWh)",
+                                   float(avaliacao["plano"]["deficit_remanescente_kwh"]), float(restante)))
+        obtidos = set(risco["nivel"] for risco in avaliacao["riscos"])
+        resultados.append(conferir(f"{nome}, níveis de risco", obtidos, niveis))
+
+    print("\n=== Bloco 5 | Regras combinadas ===")
+    tempestade = avaliacao_integrada(aplicar_cenario("TEMPESTADE"))
+    frentes = [risco["frente"] for risco in tempestade["riscos"]]
+    resultados.append(conferir("TEMPESTADE: solar baixa AND eólica inativa gera risco",
+                               any("eólica indisponível" in r["dado"] for r in tempestade["riscos"]),
+                               True))
+    resultados.append(conferir("TEMPESTADE: energia + ambiente = restrição conjunta",
+                               "Conjunta" in frentes, True))
+    multiplas = avaliacao_integrada(aplicar_cenario("MULTIPLAS_RESTRICOES"))
+    resultados.append(conferir("MULTIPLAS: primeiro risco é CRITICO",
+                               multiplas["riscos"][0]["nivel"], "CRITICO"))
+    resultados.append(conferir("MULTIPLAS: três frentes adversas",
+                               any(r["dado"].startswith("3 frentes") for r in multiplas["riscos"]),
+                               True))
+    alerta = avaliacao_integrada(aplicar_cenario("SUPORTE_VIDA_EM_ALERTA"))
+    resultados.append(conferir("SUPORTE_VIDA: O2 aponta que economia não repõe",
+                               any("não repõe" in r["restricao"] for r in alerta["riscos"]), True))
+
+    print("\n=== Bloco 5 | Previsão e potência atual separadas ===")
+    normal = aplicar_cenario("NORMAL")
+    normal["energia"]["eolica"]["vento_ms"] = 8.5
+    previsao = previsao_eolica(normal)
+    resultados.append(conferir("previsão em 8,5 m/s (kW)", previsao["potencia_kw"], 3.71922))
+    resultados.append(conferir("potência atual não muda com a previsão (kW)",
+                               normal["energia"]["eolica"]["potencia_kw"], 2.8953))
+    resultados.append(conferir("22 m/s: sem previsão numérica",
+                               previsao_eolica(aplicar_cenario("TEMPESTADE"))["potencia_kw"], None))
+    alerta_o2 = alerta["vitais"]["oxigenio"]
+    resultados.append(conferir("projeção condicional do O2 (dias)",
+                               projecao_estoque(alerta_o2), 0.5))
+    resultados.append(conferir("projeção com entrada cobrindo a demanda",
+                               projecao_estoque(avaliacao_integrada(aplicar_cenario("NORMAL"))
+                                                ["vitais"]["oxigenio"]), None))
+
+    print("\n=== Bloco 5 | Entradas digitadas inválidas ===")
+    ler = leitor_simulado(["abc", "nan", "1,5", "0,8"])
+    resultados.append(conferir("fator solar após 3 tentativas inválidas",
+                               ler_numero("Fator solar (0 a 1)", 1.0, 0, 1, False, ler), 0.8))
+    ler = leitor_simulado(["0", "50.5", "-3", "60"])
+    resultados.append(conferir("população só aceita inteiro positivo",
+                               ler_numero("População (pessoas)", 50, 1, None, True, ler), 60))
+    ler = leitor_simulado([""])
+    resultados.append(conferir("Enter mantém o valor atual",
+                               ler_numero("Poeira (tau)", 0.5, 0, None, False, ler), 0.5))
+    personalizado = aplicar_cenario("PERSONALIZADO")
+    editar_operacoes_teste = personalizado["operacoes"][3]
+    ler = leitor_simulado(["", "", "", "0,2", "0,5"])
+    editar_operacoes(personalizado, ler)
+    resultados.append(conferir("conforto não fica abaixo do mínimo (kW)",
+                               editar_operacoes_teste["pot_normal_kw"], 0.5))
+
+    print("\n=== Bloco 5 | Modo personalizado ===")
+    personalizado = aplicar_cenario("PERSONALIZADO")
+    resultados.append(conferir("PERSONALIZADO parte de NORMAL",
+                               personalizado["energia"]["eolica"]["potencia_kw"], 2.8953))
+    ler = leitor_simulado(["1", "8,5", "1", "2"])
+    editar_modulo(personalizado, "Energia eólica", ler)
+    eolica = personalizado["energia"]["eolica"]
+    resultados.append(conferir("8,5 m/s fora da tabela: usa a regressão (kW)",
+                               eolica["potencia_kw"], 3.71922))
+    resultados.append(conferir("origem da potência registrada",
+                               eolica["origem_potencia"], "estimada pela regressão"))
+    resultados.append(conferir("clima usa o mesmo vento da eólica",
+                               avaliar_clima(personalizado)["vento"]["valor"], 8.5))
+    resultados.append(conferir("cenário inexistente", aplicar_cenario("MARTE_FELIZ"), None))
+    resultados.append(conferir("cenário editado continua independente do padrão",
+                               CENARIOS["NORMAL"]["vento_ms"], 8))
+
+    print(f"\nBloco 5: {resultados.count(True)} de {len(resultados)} conferências OK.")
+    return all(resultados)
+
+
+def executar_exemplos():
+    """Roda as conferências de todos os blocos."""
+    resultados = [exemplos_blocos1_a4(), exemplos_bloco5()]
+    print("\nResumo: todos os blocos OK." if all(resultados)
+          else "\nResumo: há conferências com FALHOU; ver acima.")
+    return all(resultados)
+
+
+if __name__ == "__main__":
+    try:
+        menu_principal()
+    except (KeyboardInterrupt, EOFError):
+        print("\nEntrada interrompida. Encerrando o sistema.")
