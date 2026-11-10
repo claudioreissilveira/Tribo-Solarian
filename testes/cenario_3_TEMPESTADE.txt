@@ -1,0 +1,91 @@
+
+=== COLÔNIA AURORA SIGER | Sistema integrado ===
+  1. NORMAL
+  2. BAIXA_GERACAO
+  3. TEMPESTADE
+  4. SUPORTE_VIDA_EM_ALERTA
+  5. MULTIPLAS_RESTRICOES
+  6. PERSONALIZADO (parte de NORMAL)
+  7. Executar conferências (exemplos dos blocos)
+  0. Sair
+Opção: 
+==================================================================
+CENÁRIO TEMPESTADE | 50 pessoas | janela de 24 h
+==================================================================
+
+[1] Energia
+Geração total: 96.00 kWh
+Consumo total: 864.00 kWh
+Saldo:         -768.00 kWh
+Cobertura:     0.1111
+Energia:       VERMELHO - déficit no período; há demanda não atendida no balanço
+Eólica atual:  0.0000 kW (indisponível no período, decisão operacional P)
+
+[1b] Operações complementares (Bloco 4)
+Recomendações de operações (proposta; cadastro preservado):
+Conforto e áreas comuns: 2.0000 -> 0.5000 kW; economia 36.000 kWh. Reduzir o déficit preservando funções essenciais e mínimos.
+Mobilidade: 3.0000 -> 1.0000 kW; economia 48.000 kWh. Reduzir o déficit preservando funções essenciais e mínimos.
+Pesquisa e experimentos: 4.0000 -> 1.0000 kW; economia 72.000 kWh. Reduzir o déficit preservando funções essenciais e mínimos.
+Armazenamento e logística: 4.0000 -> 3.0000 kW; economia 24.000 kWh. Reduzir o déficit preservando funções essenciais e mínimos.
+Economia possível: 180.000 kWh
+Economia proposta: 180.000 kWh
+Geração total: 96.00 kWh
+Consumo total: 684.00 kWh
+Saldo:         -588.00 kWh
+Cobertura:     0.1404
+Energia:       VERMELHO - déficit no período; há demanda não atendida no balanço
+Déficit remanescente: 588.000 kWh. A economia não basta; é necessário recompor a geração. Não há reserva elétrica modelada nem cortes abaixo dos mínimos.
+Economia elétrica não repõe oxigênio ou alimentos. Atendimento agregado em 24 h não garante fornecimento contínuo.
+
+[2] Previsão eólica (regressão linear, Bloco 2)
+Reta: potência = 1.10496 x vento -5.67294
+Aviso: vento de 22 m/s fora da faixa de ajuste (6 a 10 m/s): sem previsão numérica
+
+[3] Recursos vitais
+Oxigênio: SUFICIENTE - estoque e entrada atendem à demanda das 24 h
+Demanda:       44.750 kg/24 h
+Disponível:    179.250 kg
+Saldo:         +134.500 kg
+Reserva bruta: 3.00 dias - VERDE (sem contar entradas futuras)
+Alimentos: SUFICIENTE - estoque e entrada atendem à demanda das 24 h
+Demanda:       40.000 kg seco/24 h
+Disponível:    590.000 kg seco
+Saldo:         +550.000 kg seco
+Reserva bruta: 14.00 dias - VERDE (sem contar entradas futuras)
+Projeção condicional (Alimentos): se entrada e consumo se mantiverem, o estoque dura 56.00 dias
+
+[4] Clima
+Vento        22 m/s - VERMELHO
+Poeira       4.5 tau - VERMELHO
+Temperatura  -80 °C - VERDE
+
+[5] Riscos e recomendações (do mais urgente ao menos urgente)
+1. [CRITICO] Energia: ALERTA: ativar modo economia - todas as complementares no mínimo protegido
+   Dado: saldo -768.00 kWh, cobertura 0.1111
+   Motivo: consumo maior que geração e a economia possível não cobre o déficit
+   Restrição: déficit de 588.00 kWh permanece com as cargas essenciais protegidas
+2. [CRITICO] Conjunta: Proteger suporte à vida e auxiliares; demais operações no mínimo
+   Dado: 2 frentes adversas (energia: True, vitais: False, ambiente: True)
+   Motivo: problemas de natureza diferente acontecendo juntos
+   Restrição: a economia elétrica não resolve falta de recurso vital nem o clima
+3. [ALTO] Energia: Priorizar suporte à vida e auxiliares; não iniciar novas cargas
+   Dado: fator solar 0.10, eólica indisponível
+   Motivo: solar reduzida e eólica fora de operação ao mesmo tempo
+   Restrição: sem segunda fonte para compensar a queda solar
+4. [ALTO] Ambiente: Suspender atividades externas e mobilidade não essencial
+   Dado: vento 22 m/s (VERMELHO), poeira tau 4.5 (VERMELHO)
+   Motivo: condição externa adversa no exercício
+   Restrição: transporte de emergência e abastecimento vital mantidos
+
+Limites: balanço agregado de 24 h, sem baterias; valores P/M do exercício.
+
+=== COLÔNIA AURORA SIGER | Sistema integrado ===
+  1. NORMAL
+  2. BAIXA_GERACAO
+  3. TEMPESTADE
+  4. SUPORTE_VIDA_EM_ALERTA
+  5. MULTIPLAS_RESTRICOES
+  6. PERSONALIZADO (parte de NORMAL)
+  7. Executar conferências (exemplos dos blocos)
+  0. Sair
+Opção: Encerrando o sistema.

@@ -1,0 +1,83 @@
+
+=== COLÔNIA AURORA SIGER | Sistema integrado ===
+  1. NORMAL
+  2. BAIXA_GERACAO
+  3. TEMPESTADE
+  4. SUPORTE_VIDA_EM_ALERTA
+  5. MULTIPLAS_RESTRICOES
+  6. PERSONALIZADO (parte de NORMAL)
+  7. Executar conferências (exemplos dos blocos)
+  0. Sair
+Opção: 
+==================================================================
+CENÁRIO SUPORTE_VIDA_EM_ALERTA | 50 pessoas | janela de 24 h
+==================================================================
+
+[1] Energia
+Geração total: 1029.49 kWh
+Consumo total: 864.00 kWh
+Saldo:         +165.49 kWh
+Cobertura:     1.1915
+Energia:       VERDE - margem de geração no período
+Eólica atual:  2.8953 kW (tabela M da seção 8)
+
+[1b] Operações complementares (Bloco 4)
+Recomendações de operações (proposta; cadastro preservado):
+Sem redução necessária: o balanço atual atende ao período.
+Economia possível: 180.000 kWh
+Economia proposta: 0.000 kWh
+Geração total: 1029.49 kWh
+Consumo total: 864.00 kWh
+Saldo:         +165.49 kWh
+Cobertura:     1.1915
+Energia:       VERDE - margem de geração no período
+Economia elétrica não repõe oxigênio ou alimentos. Atendimento agregado em 24 h não garante fornecimento contínuo.
+
+[2] Previsão eólica (regressão linear, Bloco 2)
+Reta: potência = 1.10496 x vento -5.67294
+Vento 8 m/s -> previsão de 3.1667 kW (76.00 kWh em 24 h)
+
+[3] Recursos vitais
+Oxigênio: INSUFICIENTE - estoque e entrada não cobrem a demanda das 24 h
+Demanda:       44.750 kg/24 h
+Disponível:    22.375 kg
+Saldo:         -22.375 kg
+Reserva bruta: 0.50 dias - VERMELHO (sem contar entradas futuras)
+Alimentos: SUFICIENTE - estoque e entrada atendem à demanda das 24 h
+Demanda:       40.000 kg seco/24 h
+Disponível:    100.000 kg seco
+Saldo:         +60.000 kg seco
+Reserva bruta: 2.00 dias - VERMELHO (sem contar entradas futuras)
+Projeção condicional (O2): se entrada e consumo se mantiverem, o estoque dura 0.50 dias
+Projeção condicional (Alimentos): se entrada e consumo se mantiverem, o estoque dura 4.00 dias
+
+[4] Clima
+Vento        8 m/s - VERDE
+Poeira       0.5 tau - VERDE
+Temperatura  -60 °C - VERDE
+
+[5] Riscos e recomendações (do mais urgente ao menos urgente)
+1. [CRITICO] Recursos vitais: ALERTA: providenciar reposição de O2 imediatamente
+   Dado: saldo -22.375 kg, reserva 0.50 dias
+   Motivo: estoque e entrada de O2 não cobrem a demanda de 24 h
+   Restrição: economia elétrica não repõe o recurso
+2. [ALTO] Recursos vitais: Programar reposição de Alimentos e acompanhar a entrada diária
+   Dado: saldo +60.000 kg seco, reserva 2.00 dias
+   Motivo: Alimentos atende o período, mas a reserva bruta está abaixo da política
+3. [INFO] Energia: SUGESTÃO: armazenar energia excedente ou programar cargas adiáveis neste período
+   Dado: saldo +165.49 kWh, cobertura 1.1915
+   Motivo: geração maior que consumo: possível desperdício
+   Restrição: reserva elétrica (baterias) não faz parte do modelo
+
+Limites: balanço agregado de 24 h, sem baterias; valores P/M do exercício.
+
+=== COLÔNIA AURORA SIGER | Sistema integrado ===
+  1. NORMAL
+  2. BAIXA_GERACAO
+  3. TEMPESTADE
+  4. SUPORTE_VIDA_EM_ALERTA
+  5. MULTIPLAS_RESTRICOES
+  6. PERSONALIZADO (parte de NORMAL)
+  7. Executar conferências (exemplos dos blocos)
+  0. Sair
+Opção: Encerrando o sistema.
