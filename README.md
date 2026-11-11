@@ -1,4 +1,4 @@
-# 🚀 Life Solarian — Colônia Aurora Siger
+# 🌱 Life Solarian — Colônia Aurora Siger
 
 **FIAP ON · Ciência da Computação · Fase 3 · Equipe Tribo Solarian**
 
