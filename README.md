@@ -1,6 +1,6 @@
 # 🌱 Life Solarian — Colônia Aurora Siger
 
-**FIAP ON · Ciência da Computação · Fase 3 · Equipe Tribo Solarian**
+**Ciência da Computação · Fase 3 · Equipe Tribo Solarian**
 
 Sistema integrado em Python para analisar a operação de uma colônia de **50 pessoas em Marte**, em uma janela de **24 horas terrestres**. Organiza os dados em listas e dicionários hierárquicos, calcula geração solar e eólica, compara geração e consumo, avalia oxigênio, alimentos e clima e estima potência eólica por regressão linear.
 
