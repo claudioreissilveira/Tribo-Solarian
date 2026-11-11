@@ -1,45 +1,50 @@
-# 🚀 MISSÃO AURORA SIGER | MGPEB SLR-33 🌌
+# 🚀 Life Solarian — Colônia Aurora Siger
 
-# Colônia em Marte — Fase 3
+**FIAP ON · Ciência da Computação · Fase 3 · Equipe Tribo Solarian**
 
-Equipe Tribo Solarian · versão 0.1
+Sistema integrado em Python para analisar a operação de uma colônia de **50 pessoas em Marte**, em uma janela de **24 horas terrestres**. Organiza os dados em listas e dicionários hierárquicos, calcula geração solar e eólica, compara geração e consumo, avalia oxigênio, alimentos e clima e estima potência eólica por regressão linear.
 
-Sistema integrado em Python que acompanha uma colônia de 50 pessoas em Marte, sempre
-olhando um período de **24 horas**. Ele organiza os dados da colônia em uma hierarquia,
-calcula a geração solar e eólica e o consumo, avalia oxigênio, alimentos e clima, estima
-a potência eólica por regressão linear e transforma tudo em decisões claras: alertas,
-reduções de consumo e recomendações ordenadas por urgência.
+O operador seleciona um cenário ou informa os dados por módulo. O sistema apresenta diagnósticos, riscos e recomendações para equilibrar os recursos, preservando as cargas essenciais e os mínimos operacionais. As recomendações são propostas: o cadastro e os estoques permanecem preservados após a avaliação, que registra a lista de riscos.
 
-**Repositório público:** <https://github.com/claudioreissilveira/Tribo-Solarian/tree/3-Colonia>
+**Repositório público da Fase 3:** [Tribo-Solarian — branch 3-Colonia](https://github.com/claudioreissilveira/Tribo-Solarian/tree/3-Colonia).
 
-## Como usar
+## Como executar
 
-```
+Na pasta do projeto, com Python 3 instalado:
+
+```bash
 python script/TriboSolarian_Colonia.py
 ```
 
-Só usa Python padrão (biblioteca `math`). O menu mostra os cinco cenários (1 a 5), o modo
-PERSONALIZADO (6) e as conferências de todos os blocos (7). No modo personalizado, escolha
-o módulo, digite os novos valores (Enter mantém o atual) e use `A` para avaliar. Números
-aceitam vírgula (`0,8`). Valor inválido ou fora da faixa é recusado e o programa pergunta
-de novo.
+O programa utiliza somente a biblioteca padrão (`math`), sem instalação de dependências. Foi executado na validação final com Python 3.12 e 3.14.
 
-Fluxo: **entrada** (cenário ou valores digitados) → **processamento** (balanços,
-classificações, regressão, regras) → **saída** (diagnóstico, recomendações e riscos).
+| Opção | Funcionamento |
+| --- | --- |
+| `1` | NORMAL |
+| `2` | BAIXA_GERACAO |
+| `3` | TEMPESTADE |
+| `4` | SUPORTE_VIDA_EM_ALERTA |
+| `5` | MULTIPLAS_RESTRICOES |
+| `6` | PERSONALIZADO, iniciado com os dados de NORMAL |
+| `7` | Conferências dos cinco blocos |
+| `0` | Encerrar |
+
+No modo personalizado, escolha o módulo, informe os valores e use `A` para avaliar ou `0` para voltar. Enter mantém o valor atual; números decimais aceitam vírgula, como `0,8`. Estão disponíveis população, energia solar, energia eólica, oxigênio, alimentos, clima e potências das operações complementares.
+
+Fluxo: **entrada → cálculos e classificações → regras e prioridades → diagnósticos e recomendações**.
 
 ## Exemplo de entrada e saída
 
-Entrada: opção `3` (TEMPESTADE: vento 22 m/s, poeira τ 4,5, fator solar 0,10, eólica
-desligada). Saída resumida:
+Entrada: opção `3`, cenário TEMPESTADE. Os dados incluem vento de 22 m/s, poeira τ = 4,5, fator solar de 0,10 e eólica indisponível no período. Trechos da saída:
 
-```
+```text
 [1] Energia
 Geração total: 96.00 kWh
 Consumo total: 864.00 kWh
 Saldo:         -768.00 kWh
+Cobertura:     0.1111
 Energia:       VERMELHO - déficit no período; há demanda não atendida no balanço
 
-[1b] Operações complementares (Bloco 4)
 Economia possível: 180.000 kWh
 Economia proposta: 180.000 kWh
 Déficit remanescente: 588.000 kWh. A economia não basta; é necessário recompor a geração.
@@ -47,141 +52,115 @@ Déficit remanescente: 588.000 kWh. A economia não basta; é necessário recomp
 [2] Previsão eólica (regressão linear, Bloco 2)
 Aviso: vento de 22 m/s fora da faixa de ajuste (6 a 10 m/s): sem previsão numérica
 
-[5] Riscos e recomendações (do mais urgente ao menos urgente)
 1. [CRITICO] Energia: ALERTA: ativar modo economia - todas as complementares no mínimo protegido
-   Dado: saldo -768.00 kWh, cobertura 0.1111
-   Restrição: déficit de 588.00 kWh permanece com as cargas essenciais protegidas
-4. [ALTO] Ambiente: Suspender atividades externas e mobilidade não essencial
-   Dado: vento 22 m/s (VERMELHO), poeira tau 4.5 (VERMELHO)
 ```
 
-Os resultados completos dos cinco cenários estão na pasta [testes/](testes/).
+Os resultados completos dos cinco cenários estão em [testes/](testes/). A proposta de economia preserva os mínimos, mas ainda deixa um déficit de 588 kWh nesse cenário.
 
-## Como os dados estão organizados
+## Organização do projeto
 
-**Base comum.** Todos os módulos usam a mesma população (50 pessoas) e o mesmo período
-(24 horas terrestres). A unidade de cada valor fica no nome do campo: `pot_solar_kw` está
-em quilowatts, `estoque_kg` em quilos, `vento_ms` em metros por segundo.
-
-**Hierarquia dos sistemas.** 
-
+```text
+Colonia/
+├── README.md
+├── docs/
+│   ├── Colonia_material_apoio.docx
+│   └── Relatorio_Colonia_TriboSolarian (1).pdf
+├── script/
+│   └── TriboSolarian_Colonia.py
+└── testes/
+    └── saídas dos cenários e conferências
 ```
+
+- [Script Python](script/TriboSolarian_Colonia.py): sistema integrado, menu e conferências.
+- [Material de apoio](docs/Colonia_material_apoio.docx): campos, unidades, parâmetros, cenários e referências.
+- [Relatório PDF](docs/Relatorio_Colonia_TriboSolarian%20%281%29.pdf): organização dos dados, regras, previsão, uso de energia e resultados.
+
+## Estrutura dos dados
+
+```text
 colonia
-├── contexto        cenário, população, período
+├── contexto        cenário, população e período de 24 h
 ├── energia
-│   ├── solar       potência, horas, fator solar
-│   ├── eolica      vento, disponibilidade, pares vento x potência
-│   └── auxiliares  carga de controle e distribuição
+│   ├── solar       potência, horas equivalentes e fator solar
+│   ├── eolica      vento, disponibilidade, potência atual, origem e pares
+│   └── auxiliares  carga elétrica de controle e distribuição
 ├── suporte_vida
-│   ├── oxigenio    taxa por pessoa, estoque, reposição, carga elétrica
-│   └── alimentos   taxa por pessoa, estoque, entrada, carga elétrica
-├── operacoes       lista com as 4 operações complementares
-├── clima           poeira, temperatura (o vento é lido da eólica)
-└── riscos          lista de riscos gerada na avaliação
+│   ├── oxigenio    estoque, entrada, taxa por pessoa e carga elétrica
+│   └── alimentos   estoque, entrada, taxa por pessoa e carga elétrica
+├── operacoes       quatro operações complementares
+├── clima           poeira e temperatura externa
+└── riscos          riscos registrados pela avaliação integrada
 ```
 
-Usamos três estruturas:
-- **dicionário** para guardar atributos com nome (`"pot_solar_kw": 120`);
-- **dicionário dentro de dicionário** para sistemas e subsistemas (energia → solar);
-- **lista** para dados que se repetem (as 4 operações e os 5 pares vento × potência).
+Os dicionários representam atributos e subsistemas; as listas reúnem operações, riscos e pares de vento × potência. As unidades aparecem nos nomes dos campos, como `pot_solar_kw`, `estoque_kg` e `vento_ms`.
 
-**Cenários.** Os cinco cenários (NORMAL, BAIXA_GERACAO, TEMPESTADE, SUPORTE_VIDA_EM_ALERTA,
-MULTIPLAS_RESTRICOES) ficam no dicionário `CENARIOS`, só com as entradas da seção 7 do apoio.
-`aplicar_cenario(nome)` cria uma colônia nova e cadastra essas entradas. O modo
-PERSONALIZADO começa com os valores de NORMAL e permite editar um módulo por vez.
+A velocidade do vento fica em `energia → eolica → vento_ms` e também alimenta o módulo climático. Cada carga elétrica tem um único cadastro; `listar_cargas()` e `consumos_eletricos()` reúnem as sete cargas por identificador, com validação de duplicidades e períodos. Cada cenário recebe cópias independentes dos padrões.
 
-**Vento em um lugar só.** A velocidade do vento fica em `energia → eolica → vento_ms`.
-O clima lê o vento de lá, então a geração eólica e a classificação do clima usam sempre
-o mesmo valor.
+O material de apoio distingue **R** (referência publicada), **P** (parâmetro de projeto) e **M** (dado modelado). Essa distinção identifica a origem dos valores usados no exercício.
 
-**Cargas sem repetição.** Cada carga elétrica está guardada em um lugar só: auxiliares em
-`energia`, suporte de oxigênio e de alimentos em `suporte_vida`, e as outras quatro em
-`operacoes`. A função `listar_cargas` junta numa lista as cargas já cadastradas, então nenhuma é
-somada duas vezes.
+## Energia e previsão eólica
 
-## Como a energia é calculada
+As funções de cálculo utilizam as relações:
 
-Regra básica: **energia (kWh) = potência (kW) × tempo (h)**.
-
-**1. Geração solar** — `geracao_solar(pot_solar_kw, horas_solares, fator_solar)`
-
-```
-energia solar = potência × horas equivalentes × fator solar
-NORMAL:  120 × 8 × 1,00 = 960 kWh
+```text
+Energia (kWh) = potência (kW) × tempo (h)
+Geração solar = potência solar × horas equivalentes × fator solar
+Geração eólica atual = potência atual × horas, quando a turbina está ativa
+Saldo = geração total − consumo total
+Cobertura = geração total ÷ consumo total
 ```
 
-O fator solar vai de 0 a 1 e já inclui a perda por poeira do cenário, então é usado uma
-vez só.
+Em NORMAL, a geração solar é `120 × 8 × 1,00 = 960 kWh`. O fator solar, de 0 a 1, já representa a redução do cenário e é aplicado uma única vez. A eólica atual usa a tabela modelada do apoio: a 8 m/s, gera `2,8953 × 24 = 69,4872 kWh`.
 
-**2. Consumo** — `energia_kwh(potencia_kw, horas)`
+O consumo normal das sete cargas é `(2 + 12 + 9 + 4 + 4 + 3 + 2) × 24 = 864 kWh`. A classificação identifica o déficit antes do arredondamento; nas coberturas a partir de 1,00, usa seis casas decimais para comparar as margens:
 
-Cada carga consome `potência × 24 h`. Nos exemplos do Bloco 1, os consumos de referência
-da seção 5 do apoio entram como dados de entrada:
+| Classe | Cobertura |
+| --- | --- |
+| VERDE | ≥ 1,10 |
+| AMARELO | ≥ 1,00 e < 1,10 |
+| VERMELHO | < 1,00 |
+| NAO SE APLICA | Consumo igual a zero; cobertura `None` |
 
-```
-normal: (2 + 12 + 9 + 4 + 4 + 3 + 2) kW × 24 h = 36 × 24 = 864 kWh
-```
+O saldo acompanha a classificação. Uma geração superior ao consumo pode continuar em AMARELO quando a margem é menor que 10%.
 
-**3. Balanço** — `balanco_energetico(geracoes, consumos)`
+### Regressão linear
 
-Recebe dois dicionários: as gerações (`{"solar": 960}`) e os consumos. Calcula:
+`ajustar_reta()` calcula uma reta por mínimos quadrados sobre os cinco pares modelados de vento × potência, entre 6 e 10 m/s:
 
-- **saldo** = geração total − consumo total
-- **cobertura** = geração total ÷ consumo total
-- **classificação**:
-  - VERDE: cobertura ≥ 1,10 (sobra pelo menos 10%)
-  - AMARELO: cobertura entre 1,00 e 1,10 (atende, mas com pouca folga)
-  - VERMELHO: cobertura < 1,00 (falta energia)
-- se o consumo for **zero**, não dá para dividir: a cobertura fica `None` e a
-  classificação fica "NAO SE APLICA".
-
-O saldo sempre aparece junto da cor, porque é possível sobrar energia e mesmo assim
-estar no Amarelo (ex.: 900 kWh gerados para 864 consumidos).
-
-Um detalhe: o computador calcula 950,4 ÷ 864 como 1,0999999999 em vez de 1,10. Por isso a
-cobertura é arredondada com `round(cobertura, 6)` antes de comparar com os limites.
-
-**Resultados conferidos com o documento de apoio** (só energia solar):
-
-| Cenário | Geração | Consumo | Saldo | Cobertura | Classe |
-|---|---:|---:|---:|---:|---|
-| NORMAL | 960 | 864 | +96 | 1,1111 | VERDE |
-| BAIXA_GERACAO | 768 | 864 | −96 | 0,8889 | VERMELHO |
-| TEMPESTADE | 96 | 864 | −768 | 0,1111 | VERMELHO |
-
-## Validação das entradas
-
-A função `numero_valido` confere cada valor antes de calcular. Ela recusa texto
-(`"120"`), `None`, `True`/`False`, NaN, infinito e números fora do intervalo permitido.
-Quando uma entrada é inválida, as funções de cálculo devolvem `None` em vez de um número
-errado. Regras:
-- potências e energias não podem ser negativas;
-- fator solar entre 0 e 1;
-- horas entre 0 e 24.
-
-## Testes
-
-A função `exemplos_bloco1()`, na Parte 9 do script, confere: base comum, geração
-solar, saldo, classificações (inclusive os limites exatos 1,10 e 1,00), consumo zero e
-entradas inválidas. Cada conferência aparece como `[OK]` ou `[FALHOU]`; no final, o
-programa mostra quantas deram certo.
-
-Os exemplos acumulados dos quatro blocos podem ser executados a partir da raiz:
-
-```bash
-python -c "import runpy; projeto = runpy.run_path('script/TriboSolarian_Colonia.py'); assert projeto['exemplos_blocos1_a4']()"
+```text
+P(v) = a × v + b
+a = 1,10496
+b = −5,67294
+P(8,5) = 3,71922 kW ≈ 89,26128 kWh em 24 h
 ```
 
-O Bloco 2 verifica a geração eólica e a regressão sobre os pares modelados (M),
-mantendo previsão e potência atual separadas. O Bloco 3 verifica demanda, saldo e
-reserva bruta de oxigênio e alimento seco, com as taxas de referência (R) do apoio.
-O Bloco 4 verifica cadastro independente, consumos, prioridades, mínimos, entradas
-inválidas e recomendações sem alteração automática dos dados.
+`prever_potencia()` valida a estimativa, e `previsao_eolica()` apresenta a previsão integrada. Fora da faixa de 6 a 10 m/s, a apresentação traz um aviso sem estimativa numérica.
 
-## Operações e recomendações — Bloco 4
+**Potência atual e previsão são distintas.** O balanço usa a potência atual cadastrada. No modo personalizado, sua origem pode ser a tabela modelada, a estimativa pela regressão ou um valor informado pelo operador; essa origem aparece na saída. Nos cenários de tempestade, a eólica está indisponível por decisão operacional do exercício.
 
-Responsável: Thales Martins Oliveira Barros. As quatro operações são parâmetros de
-projeto (P) da seção 5 do material de apoio, todos na janela de 24 horas terrestres.
+## Oxigênio e alimentos
+
+Para a população padrão de 50 pessoas:
+
+| Recurso | Taxa por pessoa/24 h | Demanda/24 h | Estoque em NORMAL | Entrada/24 h em NORMAL |
+| --- | ---: | ---: | ---: | ---: |
+| Oxigênio | 0,895 kg | 44,75 kg | 134,25 kg | 45 kg |
+| Alimento seco | 0,800 kg | 40 kg | 560 kg | 30 kg |
+
+`avaliar_suporte_vida()` separa dois indicadores: **suficiência do período**, quando estoque + entrada atendem à demanda, e **reserva bruta**, calculada por estoque ÷ demanda diária, sem contar entradas futuras.
+
+| Reserva bruta | VERDE | AMARELO | VERMELHO |
+| --- | --- | --- | --- |
+| Oxigênio | ≥ 2 dias | ≥ 1 e < 2 dias | < 1 dia |
+| Alimento seco | ≥ 7 dias | ≥ 3 e < 7 dias | < 3 dias |
+
+Em NORMAL, as reservas brutas são de 3 dias de O₂ e 14 dias de alimento. Em SUPORTE_VIDA_EM_ALERTA, o O₂ é insuficiente para as 24 h; o alimento atende ao período, mas tem reserva bruta de 2 dias, classificada VERMELHO.
+
+A projeção condicional usa `estoque ÷ (demanda diária − entrada diária)` quando o consumo supera a entrada. Em NORMAL, o alimento duraria 56 dias se essas condições se mantivessem. Quando a entrada cobre a demanda, o sistema não calcula uma data de esgotamento. A massa de O₂ é um estoque de recurso, sem representar concentração ou pressão do ar do habitat.
+
+## Operações e prioridades
+
+Energia, oxigênio e alimentos são essenciais. As quatro operações complementares têm prioridades e mínimos definidos no apoio:
 
 | ID | Operação | Prioridade | Normal (kW) | Mínimo (kW) | Economia máxima (kWh/24 h) |
 | --- | --- | ---: | ---: | ---: | ---: |
@@ -190,107 +169,86 @@ projeto (P) da seção 5 do material de apoio, todos na janela de 24 horas terre
 | MOB | Mobilidade | 3 | 3 | 1 | 48 |
 | CON | Conforto e áreas comuns | 4 | 2 | 0,5 | 36 |
 
-`criar_colonia()` já inclui as operações. `listar_cargas()` e `consumos_eletricos()`
-reúnem auxiliares, suporte vital e complementares uma única vez, por ID. O consumo
-normal integrado é **864 kWh**, sendo 552 kWh essenciais e 312 kWh complementares.
-O mínimo integrado é **684 kWh** e a economia máxima é **180 kWh**.
+`recomendar_operacoes()` propõe reduções na ordem **conforto → mobilidade → pesquisa → armazenamento/logística** e para assim que cobre o déficit ou esgota a parcela ajustável. As cargas essenciais e os mínimos são preservados. O consumo mínimo integrado é de **684 kWh/24 h**, com economia máxima de **180 kWh/24 h**.
 
-`avaliar_operacoes(colonia)` apresenta consumo normal, protegido e parcela ajustável.
-`recomendar_operacoes(colonia)` calcula uma proposta, sem modificar a colônia, na ordem
-**conforto → mobilidade → pesquisa → armazenamento/logística**. A redução para assim
-que o déficit é coberto; não corta as cargas essenciais nem ultrapassa os mínimos.
-O objetivo é atender ao período, sem prometer margem de 10% ou fornecimento contínuo.
+Em BAIXA_GERACAO, conforto passa de 2 para 0,5 kW e mobilidade de 3 para 1,7215 kW, economizando 66,684 kWh. O saldo proposto chega a zero, com cobertura 1,00 e classe AMARELO. Na tempestade, todas as complementares chegam aos mínimos e a saída informa o déficit residual.
 
-Exemplo de uso com a condição BAIXA_GERACAO do apoio:
+O menu recebe o balanço atual, o balanço proposto, as recomendações e o déficit remanescente. A avaliação integrada combina esses resultados com os recursos vitais e o clima. Economizar eletricidade não repõe oxigênio ou alimentos.
 
-```python
-colonia = criar_colonia()
-colonia["contexto"]["cenario"] = "BAIXA_GERACAO"
-colonia["energia"]["solar"]["fator_solar"] = 0.80
-colonia["energia"]["eolica"].update(vento_ms=6, potencia_kw=1.2215, ativa=1)
-proposta = recomendar_operacoes(colonia)
-print(diagnostico_operacoes(proposta))
-```
+## Clima e regras de decisão
 
-As potências eólicas atuais vêm da tabela modelada do apoio, sem usar a regressão
-para substituir o cenário. A tempestade tem eólica indisponível por escolha
-operacional do exercício; não é uma velocidade de corte certificada.
-
-| Cenário | Geração (kWh) | Saldo inicial (kWh) | Economia proposta (kWh) | Saldo proposto (kWh) |
-| --- | ---: | ---: | ---: | ---: |
-| NORMAL | 1.029,4872 | +165,4872 | 0 | +165,4872 |
-| BAIXA_GERACAO | 797,316 | −66,684 | 66,684 | 0 |
-| TEMPESTADE | 96 | −768 | 180 | −588 |
-
-Em baixa geração, conforto passa de 2 para 0,5 kW e mobilidade de 3 para
-1,7215 kW. O saldo proposto chega a zero, com classificação AMARELO (cobertura 1,00).
-Na tempestade, todas as complementares chegam aos mínimos e ainda faltam 588 kWh.
-A saída declara essa limitação; não propõe cortes abaixo dos mínimos nem inventa
-uma reserva elétrica. Economizar eletricidade não repõe oxigênio ou alimentos.
-
-Os resultados executados estão em [testes/exemplos_blocos1_a4.txt](testes/exemplos_blocos1_a4.txt).
-
-Para o repasse a Wallace, `recomendar_operacoes()` fornece `balanco_atual`,
-`balanco_proposto`, `recomendacoes`, `economia_maxima_kwh`, `economia_proposta_kwh`,
-`deficit_remanescente_kwh` e `atende_periodo`. O menu pode usar
-`diagnostico_operacoes()` para apresentar a proposta. Clima e riscos devem combinar
-esses dados com `avaliar_suporte_vida()`, sem atribuir reposição de recursos a cortes
-elétricos. Os cenários, a edição interativa e o menu permanecem nos espaços do Bloco 5.
-
-## Clima, riscos e integração — Bloco 5
-
-Responsável: Wallace Gabriel Américo Albuquerque.
-
-**Clima** (seção 6 do apoio). Cada indicador recebe uma classe:
+O módulo climático classifica os dados informados:
 
 | Indicador | VERDE | AMARELO | VERMELHO |
-|---|---|---|---|
-| Vento (m/s) | 0 a 10 | acima de 10 até 15 | acima de 15 |
-| Poeira (τ) | 0 a 1 | acima de 1 até 3 | acima de 3 |
-| Temperatura externa (°C) | −80 a −20 | −100 a −80 ou −20 a 0 | abaixo de −100 ou acima de 0 |
+| --- | --- | --- | --- |
+| Vento (m/s) | 0 a 10 | > 10 e ≤ 15 | > 15 |
+| Poeira (τ) | 0 a 1 | > 1 e ≤ 3 | > 3 |
+| Temperatura externa (°C) | −80 a −20, inclusive | −100 ≤ T < −80 ou −20 < T ≤ 0 | < −100 ou > 0 |
 
-O clima só descreve o cenário informado. O programa não prevê tempestades.
+`avaliar_riscos()` aplica condições simples e combinadas. Cada risco informa frente, gravidade, dado, motivo, recomendação e eventual restrição. A lista é ordenada por **CRITICO → ALTO → ATENCAO → INFO**.
 
-**Riscos.** `avaliar_riscos` cruza energia, a proposta do Bloco 4 (`recomendar_operacoes`),
-recursos vitais e clima, com condições simples e combinadas. Cada risco mostra o **dado**,
-o **motivo**, a **recomendação** e a **restrição** que continua depois da ação. A lista sai
-ordenada do mais urgente (CRITICO) ao menos urgente (INFO). Principais regras:
+| Condição | Diagnóstico ou recomendação |
+| --- | --- |
+| Energia VERMELHO e economia suficiente | ALTO: reduzir consumo conforme a proposta |
+| Energia VERMELHO e economia insuficiente | CRITICO: modo economia, com o déficit residual informado |
+| Energia AMARELO | ATENCAO: adiar cargas não essenciais para recuperar margem |
+| Energia VERDE | INFO: armazenar excedente ou programar cargas adiáveis |
+| Fator solar < 0,5 e eólica inativa | ALTO: fontes comprometidas simultaneamente |
+| O₂ ou alimento insuficiente para o período | CRITICO: providenciar reposição |
+| Reserva vital curta, com atendimento no período | ALTO ou ATENCAO conforme a classificação da reserva |
+| Vento ou poeira VERMELHO | ALTO: suspender atividades externas não essenciais |
+| Temperatura externa AMARELO ou VERMELHO | ATENCAO ou ALTO: reduzir exposição externa |
+| Duas ou mais frentes adversas reconhecidas pela regra conjunta | CRITICO: restrição conjunta |
 
-- consumo > geração **e** as reduções do Bloco 4 cobrem o déficit → `ALERTA: reduzir consumo`;
-- consumo > geração **e** as reduções não bastam → `ALERTA: ativar modo economia` (CRITICO),
-  informando o déficit que sobra;
-- geração > consumo → `SUGESTÃO: armazenar energia excedente`;
-- fator solar < 0,5 **e** eólica indisponível → as duas fontes comprometidas;
-- O₂ ou alimento insuficiente → reposição imediata (a economia elétrica não repõe recurso);
-- vento **ou** poeira em VERMELHO → suspender atividades externas;
-- duas ou mais frentes adversas (energia, vitais, ambiente) → restrição conjunta (CRITICO).
+A regra conjunta conta energia VERMELHO, recurso vital insuficiente ou com reserva VERMELHO e ambiente com vento, poeira ou temperatura VERMELHO. Quando há restrição vital combinada com outra frente, a recomendação trata em conjunto o equilíbrio energético e a reposição de O₂/alimentos, preservando os três sistemas essenciais.
 
-| Cenário | Energia | Recursos vitais | Clima | Riscos gerados |
-|---|---|---|---|---|
-| NORMAL | VERDE, +165,49 kWh | suficientes | VERDE | INFO: excedente |
-| BAIXA_GERACAO | VERMELHO, −66,68 kWh (resolvido com 66,68 kWh de economia) | suficientes | poeira AMARELO | ALTO, ATENCAO |
-| TEMPESTADE | VERMELHO, −768 kWh (sobram 588 kWh) | suficientes | vento e poeira VERMELHO | CRITICO, ALTO |
-| SUPORTE_VIDA_EM_ALERTA | VERDE, +165,49 kWh | O₂ insuficiente, alimento com reserva curta | VERDE | CRITICO, ALTO, INFO |
-| MULTIPLAS_RESTRICOES | VERMELHO, −768 kWh (sobram 588 kWh) | O₂ insuficiente | vento e poeira VERMELHO | CRITICO, ALTO |
+## Resultados dos cinco cenários
 
-**Previsão integrada.** A reta do Bloco 2 estima a potência eólica para o vento atual,
-sempre separada da potência atual do cenário. Fora de 6 a 10 m/s, o programa mostra um
-aviso em vez de um número. Para O₂ e alimentos há uma projeção condicional: em quantos
-dias o estoque acaba **se** entrada e consumo continuarem iguais.
+Resultados integrados, incluindo solar e eólica, para consumo normal de **864 kWh/24 h**:
 
-**Entradas.** `ler_numero` repete a pergunta até receber um número finito dentro da faixa
-do campo (aceita vírgula; Enter mantém o valor). População só aceita inteiro positivo, e a
-potência de uma operação nunca fica abaixo do mínimo protegido. No modo personalizado, a
-potência eólica pode vir da tabela M, da regressão ou ser informada, e a origem é exibida.
+| Cenário | Geração (kWh) | Saldo inicial (kWh) | Economia proposta (kWh) | Saldo proposto (kWh) | Riscos gerados |
+| --- | ---: | ---: | ---: | ---: | --- |
+| NORMAL | 1.029,4872 | +165,4872 | 0 | +165,4872 | INFO |
+| BAIXA_GERACAO | 797,3160 | −66,6840 | 66,6840 | 0 | ALTO, ATENCAO |
+| TEMPESTADE | 96 | −768 | 180 | −588 | CRITICO, ALTO |
+| SUPORTE_VIDA_EM_ALERTA | 1.029,4872 | +165,4872 | 0 | +165,4872 | CRITICO, ALTO, INFO |
+| MULTIPLAS_RESTRICOES | 96 | −768 | 180 | −588 | CRITICO, ALTO |
 
-`exemplos_bloco5()` confere os limites de vento, poeira e temperatura, os cinco cenários,
-as regras combinadas, a previsão fora da faixa, entradas digitadas inválidas e o modo
-personalizado. A opção 7 do menu roda as conferências dos cinco blocos (172 no total).
+## Conferências e validação
 
-## Simplificações
+A opção `7` do menu executa `executar_exemplos()`, que reúne as conferências dos cinco blocos. Cada comparação informa `[OK]` ou `[FALHOU]`. Para executar a mesma suíte diretamente, a partir da pasta do projeto:
 
-- O balanço soma as 24 horas: saldo positivo não garante energia durante a noite.
-- Baterias (reserva elétrica) não fazem parte do trabalho.
-- Os valores de potência, estoques e limites são parâmetros escolhidos para o exercício,
-  não medições reais.
+```bash
+python -X utf8 -c "import runpy; projeto = runpy.run_path('script/TriboSolarian_Colonia.py'); assert projeto['executar_exemplos']()"
+```
 
+| Bloco | Escopo das conferências | Resultado em 10/11/2026 |
+| --- | --- | ---: |
+| 1 | Hierarquia, solar, balanço e limites energéticos | 29/29 |
+| 2 | Eólica, regressão, domínio e disponibilidade | 18/18 |
+| 3 | Demandas, suficiência, reservas e cargas vitais | 25/25 |
+| 4 | Consumos, prioridades, mínimos e recomendações | 39/39 |
+| 5 | Clima, cenários, riscos, entradas e integração | 61/61 |
+| **Total** | **Conferências incluídas no script** | **172/172** |
+
+A validação também inclui 26 verificações adicionais de funcionamento e nove testes direcionados aos refinamentos: combinação de temperatura crítica com déficit, tratamento conjunto dos essenciais, recuperação da entrada após um inteiro extremo, resultados finitos e recusa de previsão negativa.
+
+As evidências da equipe estão em [conferencias_blocos1_a5.txt](testes/conferencias_blocos1_a5.txt), [entradas_invalidas.txt](testes/entradas_invalidas.txt) e nos arquivos dos cinco cenários em [testes/](testes/).
+
+## Contribuições por bloco
+
+| Bloco | Responsável | Implementação |
+| --- | --- | --- |
+| 1 | Vitor Lima Montiel | Base comum, hierarquia, geração solar e balanço energético |
+| 2 | Victor Augusto dos Santos Souza | Geração eólica, ajuste da reta e previsão |
+| 3 | Cláudio Roberto Grillo Reis Silveira | Oxigênio, alimentos, suficiência e reservas |
+| 4 | Thales Martins Oliveira Barros | Operações, prioridades e propostas de economia |
+| 5 | Wallace Gabriel Américo Albuquerque | Cenários, clima, riscos, entradas, menu e integração |
+
+## Limites do modelo
+
+- O balanço agrega 24 horas terrestres; um saldo positivo não garante fornecimento contínuo durante a noite. Baterias e reserva elétrica estão fora do modelo.
+- Potências, estoques, limiares e cenários seguem as referências e escolhas didáticas identificadas no material de apoio. Os pares eólicos são modelados.
+- A regressão é uma aproximação local, utilizada entre 6 e 10 m/s. A previsão permanece separada da geração atual.
+- O clima descreve as entradas do cenário. A aplicação não prevê a chegada de tempestades nem controla sensores ou equipamentos.
+- As validações recusam texto indevido, NaN, infinito, valores fora das faixas e operações abaixo dos mínimos. Inteiros que excedem a conversão numérica são recusados; o cálculo de energia e o balanço verificam resultados finitos, e a previsão integrada utiliza a validação de potência da regressão.

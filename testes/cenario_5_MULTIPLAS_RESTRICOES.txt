@@ -69,7 +69,7 @@ Temperatura  -80 °C - VERDE
    Dado: saldo -22.375 kg, reserva 0.50 dias
    Motivo: estoque e entrada de O2 não cobrem a demanda de 24 h
    Restrição: economia elétrica não repõe o recurso
-3. [CRITICO] Conjunta: Tratar primeiro a reposição de O2/alimentos, depois a energia
+3. [CRITICO] Conjunta: Tratar em conjunto o equilíbrio de energia e a reposição de O2/alimentos
    Dado: 3 frentes adversas (energia: True, vitais: True, ambiente: True)
    Motivo: problemas de natureza diferente acontecendo juntos
    Restrição: a economia elétrica não resolve falta de recurso vital nem o clima

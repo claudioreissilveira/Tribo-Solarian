@@ -571,6 +571,8 @@ def classificar_cobertura(cobertura):
     """
     if cobertura is None:
         return "NAO SE APLICA"
+    if cobertura < LIMIAR_COBERTURA_AMARELO:
+        return "VERMELHO"
     # round evita erro de arredondamento do computador:
     # 950,4 / 864 deveria dar 1,10, mas o Python calcula 1,0999999999999999
     cobertura = round(cobertura, 6)
@@ -745,7 +747,7 @@ def avaliar_riscos(colonia, energia, vitais, clima, plano):
     classe_energia = energia["classificacao"]
     saldo = energia["saldo_kwh"]
 
-    # Energia: déficit (consumo > geração) ---------------------------------------
+    # Energia: déficit (consumo > geração) 
     deficit = classe_energia == "VERMELHO"
     resolvido = plano is not None and plano["atende_periodo"]
     if deficit and resolvido:
@@ -779,7 +781,7 @@ def avaliar_riscos(colonia, energia, vitais, clima, plano):
             "neste período",
             "reserva elétrica (baterias) não faz parte do modelo"))
 
-    # Fontes: as duas comprometidas ao mesmo tempo --------------------------------
+    # Fontes: as duas comprometidas ao mesmo tempo 
     if solar["fator_solar"] < 0.5 and eolica["ativa"] == 0:
         riscos.append(novo_risco(
             "Energia", "ALTO",
@@ -788,7 +790,7 @@ def avaliar_riscos(colonia, energia, vitais, clima, plano):
             "Priorizar suporte à vida e auxiliares; não iniciar novas cargas",
             "sem segunda fonte para compensar a queda solar"))
 
-    # Recursos vitais -------------------------------------------------------------
+    # Recursos vitais 
     nomes = {"oxigenio": "O2", "alimentos": "Alimentos"}
     for chave, rotulo in nomes.items():
         recurso = vitais[chave]
@@ -812,7 +814,7 @@ def avaliar_riscos(colonia, energia, vitais, clima, plano):
                 f"reserva curta de {rotulo}",
                 f"Acompanhar a reposição de {rotulo}"))
 
-    # Ambiente --------------------------------------------------------------------
+    # Ambiente 
     vento = clima["vento"]
     poeira = clima["poeira"]
     temperatura = clima["temperatura"]
@@ -838,17 +840,19 @@ def avaliar_riscos(colonia, energia, vitais, clima, plano):
             "fora da faixa externa de referência",
             "Reduzir a exposição de pessoas e equipamentos no exterior"))
 
-    # Restrições conjuntas: problemas de natureza diferente ao mesmo tempo ---------
+    # Restrições conjuntas: problemas de natureza diferente ao mesmo tempo 
     energia_ruim = classe_energia == "VERMELHO"
     vital_ruim = (not vitais["oxigenio"]["suficiente"]
                   or not vitais["alimentos"]["suficiente"]
                   or vitais["oxigenio"]["classificacao"] == "VERMELHO"
                   or vitais["alimentos"]["classificacao"] == "VERMELHO")
-    ambiente_ruim = vento["classe"] == "VERMELHO" or poeira["classe"] == "VERMELHO"
+    ambiente_ruim = (vento["classe"] == "VERMELHO"
+                     or poeira["classe"] == "VERMELHO"
+                     or temperatura["classe"] == "VERMELHO")
     frentes_adversas = [energia_ruim, vital_ruim, ambiente_ruim].count(True)
     if frentes_adversas >= 2:
         if vital_ruim:
-            acao = "Tratar primeiro a reposição de O2/alimentos, depois a energia"
+            acao = "Tratar em conjunto o equilíbrio de energia e a reposição de O2/alimentos"
         else:
             acao = "Proteger suporte à vida e auxiliares; demais operações no mínimo"
         riscos.append(novo_risco(
@@ -963,7 +967,11 @@ def numero_valido(valor, minimo=None, maximo=None):
     """
     if type(valor) not in (int, float):
         return False
-    if not math.isfinite(valor):
+    try:
+        finito = math.isfinite(valor)
+    except OverflowError:
+        return False
+    if not finito:
         return False
     if minimo is not None and valor < minimo:
         return False
@@ -978,7 +986,10 @@ def energia_kwh(potencia_kw, horas):
         return None
     if not numero_valido(horas, minimo=0, maximo=PERIODO_H):
         return None
-    return potencia_kw * horas
+    energia = potencia_kw * horas
+    if not numero_valido(energia, minimo=0):
+        return None
+    return energia
 
 
 def geracao_solar(pot_solar_kw, horas_solares, fator_solar):
@@ -1018,6 +1029,8 @@ def balanco_energetico(geracoes, consumos):
             return None
         consumo_total = consumo_total + consumos[carga]
 
+    if not numero_valido(geracao_total) or not numero_valido(consumo_total):
+        return None
     saldo = geracao_total - consumo_total
 
     # Consumo zero: não divide; a cobertura não se aplica (seção 3.3)
@@ -1025,6 +1038,8 @@ def balanco_energetico(geracoes, consumos):
         cobertura = None
     else:
         cobertura = geracao_total / consumo_total
+        if not numero_valido(cobertura):
+            return None
 
     return {
         "geracao_por_fonte_kwh": dict(geracoes),
@@ -1067,7 +1082,7 @@ def geracao_eolica(pot_kw, horas, eolica_ativa):
         return None
 
     if eolica_ativa == 1:
-        return pot_kw * horas
+        return energia_kwh(pot_kw, horas)
     return 0
 
 
@@ -1275,9 +1290,16 @@ def previsao_eolica(colonia):
                               "sem previsão numérica")
         return resultado
     a, b = ajuste
-    potencia = a * vento + b
+    potencia = prever_potencia(vento, a, b)
+    if potencia is None:
+        resultado["aviso"] = "regressão resultou em potência inválida: sem previsão numérica"
+        return resultado
+    energia = energia_kwh(potencia, eolica["horas"])
+    if energia is None:
+        resultado["aviso"] = "energia prevista inválida: sem previsão numérica"
+        return resultado
     resultado["potencia_kw"] = potencia
-    resultado["energia_kwh"] = potencia * eolica["horas"]
+    resultado["energia_kwh"] = energia
     return resultado
 
 
