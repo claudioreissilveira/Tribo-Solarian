@@ -1,7 +1,6 @@
 """
-TRIBO SOLARIAN | FIAP ON - Ciência da Computação
-Global Solution 2026.2 - CitizenTech
-Neighborhood Action Dashboard - BAIRRO SOLARIAN
+TRIBO SOLARIAN | FIAP ON - Ciência da Computação - 2026.2
+Global Solution | CitizenTech - Neighborhood Action Dashboard 
 
 Integrantes:
     Cláudio Roberto Grillo Reis Silveira | RM575353
@@ -10,16 +9,22 @@ Integrantes:
     Victor Augusto dos Santos Souza | RM576021
     Thales Martins Oliveira Barros | RM574664
 
+BAIRRO SOLARIAN - Sistema Unificado de Gestão e Solicitações: 
+
 Simulação realista de um sistema de gestão comunitária. O projeto parte de
 situações do cotidiano de um bairro e reproduz funcionalidades presentes em
-serviços reais de atendimento ao cidadão: registro de ocorrências, triagem,
-acompanhamento de cada etapa, apoio a registros existentes, indicadores e
+serviços reais de atendimento ao morador/cidadão: registro de ocorrências, triagem,
+acompanhamento de etapas, apoio a registros existentes, indicadores e
 agenda de eventos. O objetivo é compreender a rotina dos moradores e facilitar
 a vida em comunidade por meio da organização das informações.
 
-Como executar:  python src/BairroSolarian_GlobalSolution.py
+Como executar:  
 
-Organização do arquivo:
+python src/BairroSolarian_GlobalSolution.py 
+OU
+baixar .exe -> clicar duas vezes no arquivo -> utilizar sistema
+
+Organização do código:
     Parte 0  - Bibliotecas, configuração e cores do terminal
     Parte 1  - Categorias, situações, transições e limites
     Parte 2  - Base inicial do bairro e das ocorrências (dados fictícios)
@@ -35,11 +40,7 @@ Organização do arquivo:
     Parte 12 - Conferências e ponto de entrada
 """
 
-# =============================================================================
-# PARTE 0 - Bibliotecas, configuração e cores do terminal
-# Apenas a biblioteca padrão: json (banco de dados), os e sys (arquivos),
-# hashlib e getpass (senha do gestor).
-# =============================================================================
+# Parte 0 - Bibliotecas, configuração e cores do terminal
 
 import getpass
 import hashlib
@@ -53,7 +54,7 @@ NOME_BAIRRO = "Bairro Solarian"
 PERFIL_MORADOR = "MORADOR"
 PERFIL_GESTOR = "GESTOR"
 
-# Apresentação do projeto, exibida no menu principal e na tela "Sobre".
+# Textos de apresentação do projeto.
 RESUMO_PROJETO = "Simulação realista de um sistema de gestão comunitária de bairro"
 APRESENTACAO = [
     "O Bairro Solarian é uma simulação realista de um sistema de gestão comunitária. "
@@ -71,26 +72,23 @@ APRESENTACAO = [
     "convivência e rotina próprios, para que a simulação se aproxime do uso real.",
 ]
 
-# Códigos de cor do terminal. A cor apenas reforça a informação escrita.
+# Códigos de cor aceitos pelo terminal.
 CORES = {
     "vermelho": "91", "verde": "92", "amarelo": "93", "azul": "94",
     "magenta": "95", "ciano": "96", "cinza": "90", "negrito": "1",
 }
 
-# Preferência de exibição, alterada pelo menu principal.
-CONFIG = {"cores": True}
+# Indica se as cores estão ativas.
+CONFIGURACAO = {"cores": True}
 
 
 def pintar(texto, cor):
-    if not CONFIG["cores"] or cor not in CORES:
+    if not CONFIGURACAO["cores"] or cor not in CORES:
         return texto
     return "\033[" + CORES[cor] + "m" + texto + "\033[0m"
 
 
-# =============================================================================
-# PARTE 1 - Categorias, situações, transições e limites
-# Valores padronizados: o sistema armazena o identificador e exibe o nome.
-# =============================================================================
+# Parte 1 - Categorias, situações, transições e limites
 
 CATEGORIAS = ["ILUMINACAO", "ACESSIBILIDADE", "LIMPEZA", "CONSERVACAO"]
 
@@ -127,7 +125,7 @@ COR_SITUACAO = {
     "RECUSADA": "cinza",
 }
 
-# Cada situação aponta para as situações seguintes permitidas.
+# Situações permitidas a partir de cada situação.
 TRANSICOES = {
     "ABERTA": ["EM_ANALISE"],
     "EM_ANALISE": ["EM_ATENDIMENTO", "RECUSADA"],
@@ -136,7 +134,7 @@ TRANSICOES = {
     "RECUSADA": [],
 }
 
-# Uma ocorrência pendente há mais dias que este limite é considerada atrasada.
+# Limite de dias para considerar uma pendência atrasada.
 LIMITE_DIAS_ATRASO = 7
 
 TAMANHO_MINIMO_DESCRICAO = 5
@@ -148,11 +146,11 @@ CAMPOS_OBRIGATORIOS = [
     "id", "categoria", "descricao", "setor", "local", "dia_abertura", "status",
 ]
 
-# Senha do gestor: o código armazena apenas o resumo da senha.
+# Resumo criptográfico da senha do gestor.
 RESUMO_SENHA_GESTOR = "5994471abb01112afcc18159f6cc74b4f511b99806da59b3caf5a9c173cacfc5"
 TENTATIVAS_SENHA = 3
 
-# Agenda do bairro: tipos de evento que o gestor pode divulgar.
+# Tipos de evento da agenda do bairro.
 TIPOS_EVENTO = ["FESTA", "ENCONTRO", "REUNIAO", "MUTIRAO"]
 NOMES_TIPO_EVENTO = {
     "FESTA": "Festa",
@@ -161,7 +159,7 @@ NOMES_TIPO_EVENTO = {
     "MUTIRAO": "Mutirão",
 }
 
-# Regra do bairro: horário de silêncio das 22h às 8h.
+# Horário de silêncio do bairro: das 22h às 8h.
 HORA_FIM_SILENCIO = 8
 HORA_INICIO_SILENCIO = 22
 
@@ -173,16 +171,11 @@ def nomes_de(codigos, nomes):
     return lista
 
 
-# =============================================================================
-# PARTE 2 - Base inicial do bairro e das ocorrências (dados fictícios)
-# O bairro segue o mapa "Solarian - Bairro fictício": quarteirões (Q) e casas
-# numeradas, cortados pela Avenida Sol Nascente, que separa os lados Oeste e Leste.
-# =============================================================================
+# Parte 2 - Base inicial do bairro e das ocorrências (dados fictícios)
 
 SETORES = ["OESTE", "LESTE"]
 
-# Locais genéricos onde uma ocorrência pode ser registrada: ruas, espaços
-# coletivos e pontos de referência (comércios e hospital, para a calçada em frente).
+# Locais em que uma ocorrência pode ser registrada, por lado do bairro.
 BAIRRO = {
     "OESTE": {
         "nome": "Lado Oeste",
@@ -219,8 +212,7 @@ BAIRRO = {
     },
 }
 
-# Quarteirões residenciais: (código, lado, maior número de casa), conforme o mapa.
-# Q06, Q19, Q25 e Q29 abrigam escolas, praça e hospital e não possuem casas.
+# Quarteirões residenciais: código, lado e maior número de casa.
 QUARTEIROES = [
     ("Q01", "OESTE", 1), ("Q02", "OESTE", 4), ("Q03", "OESTE", 3), ("Q04", "OESTE", 1),
     ("Q05", "LESTE", 4), ("Q07", "LESTE", 1),
@@ -234,8 +226,7 @@ QUARTEIROES = [
     ("Q31", "LESTE", 3), ("Q32", "LESTE", 4), ("Q33", "LESTE", 1),
 ]
 
-# Moradores fictícios: (identificador, nome, e-mail, quarteirão, casa).
-# O e-mail e a casa não são exibidos nas listagens do bairro.
+# Moradores fictícios: identificador, nome, e-mail, quarteirão e casa.
 CADASTRO_MORADORES = [
     ("USR001", "Ana Clara Martins", "ana.martins@example.com", "Q02", 1),
     ("USR002", "Bruno Henrique Costa", "bruno.costa@example.com", "Q03", 2),
@@ -302,7 +293,7 @@ def buscar_morador(codigo):
     return None
 
 
-# Regras de convivência: (tema, lista de itens), conforme descrito em docs/bairro-solarian.md.
+# Regras de convivência: tema e itens.
 REGRAS_BAIRRO = [
     ("Coleta de lixo comum", [
         "A coleta acontece às segundas, quartas e sextas-feiras, das 7h às 10h.",
@@ -394,11 +385,10 @@ REGRAS_BAIRRO = [
 
 DIA_INICIAL = 12
 
-# Alterada quando a base do código muda; um banco de outra versão é recriado.
+# Versão da base. Um banco de outra versão é recriado.
 VERSAO_BASE = 5
 
-# Registros de origem. Os três últimos possuem defeitos propositais, que a
-# validação identifica e separa em "registros com problema".
+# Registros iniciais. Os três últimos contêm inconsistências propositais.
 REGISTROS_INICIAIS = [
     {"id": "OC-001", "categoria": "ILUMINACAO", "setor": "LESTE", "local": "Praça dos Encontros",
      "descricao": "Três postes apagados ao redor da fonte.", "dia_abertura": 1, "status": "ABERTA", "autor": "USR024"},
@@ -424,18 +414,18 @@ REGISTROS_INICIAIS = [
      "descricao": "Calçada sem rebaixamento para cadeira de rodas.", "dia_abertura": 10, "status": "ABERTA", "autor": "USR020"},
     {"id": "OC-012", "categoria": "CONSERVACAO", "setor": "OESTE", "local": "Rua dos Girassóis",
      "descricao": "Buraco na calçada perto da esquina.", "dia_abertura": 11, "status": "ABERTA", "autor": "USR023"},
-    # Defeito 1: categoria ausente.
+    # Inconsistência 1: categoria ausente.
     {"id": "OC-013", "categoria": "", "setor": "OESTE", "local": "Rua do Horizonte",
      "descricao": "Problema na rua, sem informar o tipo.", "dia_abertura": 8, "status": "ABERTA", "autor": "USR008"},
-    # Defeito 2: situação desconhecida.
+    # Inconsistência 2: situação desconhecida.
     {"id": "OC-014", "categoria": "LIMPEZA", "setor": "LESTE", "local": "Praça dos Encontros",
      "descricao": "Folhas acumuladas no parquinho.", "dia_abertura": 9, "status": "RESOLVENDO", "autor": "USR024"},
-    # Defeito 3: código repetido.
+    # Inconsistência 3: código repetido.
     {"id": "OC-003", "categoria": "ILUMINACAO", "setor": "OESTE", "local": "Rua dos Girassóis",
      "descricao": "Poste inclinado.", "dia_abertura": 10, "status": "ABERTA", "autor": "USR023"},
 ]
 
-# Atualizações simuladas: (dia, código, nova situação, observação).
+# Atualizações iniciais: dia, código, nova situação e observação.
 EVENTOS_INICIAIS = [
     (2, "OC-001", "EM_ANALISE", "Vistoria agendada."),
     (3, "OC-001", "EM_ATENDIMENTO", "Troca das lâmpadas iniciada."),
@@ -457,10 +447,7 @@ EVENTOS_INICIAIS = [
 ]
 
 
-# =============================================================================
-# PARTE 3 - Regras de validação dos registros
-# Aplicadas na carga da base e no cadastro pelo terminal.
-# =============================================================================
+# Parte 3 - Regras de validação dos registros
 
 def categoria_valida(categoria):
     return categoria in CATEGORIAS
@@ -478,19 +465,19 @@ def campo_vazio(valor):
     return valor is None or str(valor).strip() == ""
 
 
-# Devolve a lista de inconsistências do registro; lista vazia indica registro válido.
+# Devolve as inconsistências do registro. Lista vazia indica registro válido.
 def validar_registro(registro, indice):
     problemas = []
 
     for campo in CAMPOS_OBRIGATORIOS:
-        if campo_vazio(registro.get(campo)):
+        if campo_vazio(registro[campo]):
             problemas.append("campo obrigatório ausente: " + campo)
 
-    codigo = registro.get("id")
-    categoria = registro.get("categoria")
-    situacao = registro.get("status")
-    setor = registro.get("setor")
-    local = registro.get("local")
+    codigo = registro["id"]
+    categoria = registro["categoria"]
+    situacao = registro["status"]
+    setor = registro["setor"]
+    local = registro["local"]
 
     if not campo_vazio(codigo) and codigo in indice:
         problemas.append("código repetido: " + codigo)
@@ -504,12 +491,7 @@ def validar_registro(registro, indice):
     return problemas
 
 
-# =============================================================================
-# PARTE 4 - Banco de dados em JSON
-# O arquivo armazena os dados de origem: dia simulado, ocorrências, histórico,
-# fila de triagem, registros rejeitados e agenda. O bairro e os moradores são
-# definidos no código. As demais estruturas são reconstruídas na Parte 5.
-# =============================================================================
+# Parte 4 - Banco de dados em JSON
 
 def novo_banco_vazio():
     return {
@@ -540,7 +522,7 @@ def nova_ocorrencia(codigo, categoria, setor, local, descricao, dia_abertura, au
     }
 
 
-# Constrói a base inicial: valida os registros e aplica as atualizações simuladas.
+# Constrói a base inicial a partir dos registros e das atualizações.
 def criar_banco_inicial():
     estado = novo_estado(novo_banco_vazio(), None)
     banco = estado["banco"]
@@ -568,24 +550,26 @@ def criar_banco_inicial():
     return banco
 
 
-# O banco fica na pasta "dados" do projeto; no executável, ao lado do arquivo .exe.
+# Localiza o arquivo do banco na pasta dados.
 def caminho_banco():
-    if getattr(sys, "frozen", False):
-        pasta = os.path.dirname(sys.executable)
+    if hasattr(sys, "frozen"):
+        # programa executável: a pasta dados fica ao lado do arquivo .exe
+        pasta_projeto = os.path.dirname(sys.executable)
     else:
-        pasta = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(pasta, "dados", "banco.json")
+        pasta_src = os.path.dirname(os.path.abspath(__file__))
+        pasta_projeto = os.path.dirname(pasta_src)
+    return os.path.join(pasta_projeto, "dados", "banco.json")
 
 
-# Arquivo ausente, ilegível ou de outra versão resulta em nova base inicial.
+# Lê o banco. Se o arquivo for inválido, recria a base inicial.
 def carregar_banco(caminho):
     if os.path.exists(caminho):
         try:
             with open(caminho, "r", encoding="utf-8") as arquivo:
                 banco = json.load(arquivo)
-            if banco.get("versao") == VERSAO_BASE:
+            if banco["versao"] == VERSAO_BASE:
                 return banco
-        except (OSError, ValueError, AttributeError):
+        except (OSError, ValueError, KeyError, TypeError):
             pass
         mensagem_atencao("Banco de dados ilegível ou de outra versão: base inicial recriada.")
     return criar_banco_inicial()
@@ -603,15 +587,7 @@ def salvar_banco(estado):
         mensagem_erro("Não foi possível gravar o banco de dados em " + caminho)
 
 
-# =============================================================================
-# PARTE 5 - Estruturas de dados
-#   lista       banco["ocorrencias"]   conjunto completo, percorrido nas consultas
-#   dicionário  estado["indice"]       acesso direto pelo código
-#   fila        banco["fila_triagem"]  abertas ainda não examinadas (entra no fim, sai do início)
-#   pilha       estado["pilha"]        atualizações; a mais recente fica no topo
-#   hierarquia  estado["hierarquia"]   bairro -> lado -> categoria -> códigos
-#   matriz      estado["matriz"]       linhas = categorias, colunas = situações
-# =============================================================================
+# Parte 5 - Estruturas de dados
 
 def novo_estado(banco, caminho):
     estado = {"banco": banco, "caminho": caminho}
@@ -663,33 +639,32 @@ def reconstruir_estruturas(estado):
     estado["matriz"] = montar_matriz(banco["ocorrencias"])
 
 
-# Após cada mudança: atualiza hierarquia e matriz e grava o banco.
+# Atualiza a hierarquia e a matriz e grava o banco.
 def registrar_alteracao(estado):
     estado["hierarquia"] = montar_hierarquia(estado["banco"]["ocorrencias"])
     estado["matriz"] = montar_matriz(estado["banco"]["ocorrencias"])
     salvar_banco(estado)
 
 
-# =============================================================================
-# PARTE 6 - Entrada de dados validada
-# As escolhas são feitas por número; apenas descrições e títulos são digitados.
-# =============================================================================
+# Parte 6 - Entrada de dados validada
 
-# Repete a leitura até receber um número inteiro dentro do intervalo.
+# Lê um número inteiro dentro do intervalo informado.
 def ler_opcao(mensagem, minimo, maximo):
     while True:
         texto = input(mensagem).strip()
-        if texto.isdigit() and len(texto) <= 4 and minimo <= int(texto) <= maximo:
-            return int(texto)
+        if texto.isdigit() and len(texto) <= 4:
+            numero = int(texto)
+            if numero >= minimo and numero <= maximo:
+                return numero
         mensagem_erro("Opção inválida. Digite um número de " + str(minimo) + " a " + str(maximo) + ".")
 
 
-# Remove espaços repetidos e espaços nas extremidades.
+# Remove espaços excedentes.
 def limpar_texto(texto):
     return " ".join(texto.split())
 
 
-# Devolve o texto validado, ou None quando o usuário digita 0 para cancelar.
+# Lê um texto. Devolve None se o usuário digitar 0.
 def ler_texto(mensagem, minimo, maximo):
     while True:
         texto = limpar_texto(input(mensagem))
@@ -707,7 +682,7 @@ def confirmar(mensagem):
     return ler_opcao(mensagem + " (1 = sim, 0 = não): ", 0, 1) == 1
 
 
-# Devolve a posição escolhida na lista, ou None quando o usuário volta.
+# Devolve a posição escolhida. None indica retorno ao menu anterior.
 def escolher(titulo_menu, opcoes):
     print()
     print(pintar(titulo_menu, "negrito"))
@@ -720,10 +695,10 @@ def escolher(titulo_menu, opcoes):
     return escolha - 1
 
 
-# Converte "14" ou "oc14" para o padrão OC-014; devolve None se for inválido.
+# Converte a entrada para o formato OC-000. Devolve None se for inválida.
 def normalizar_id(texto):
     digitos = texto.strip().upper().replace("OC", "").replace("-", "").strip()
-    if digitos.isdigit() and 1 <= len(digitos) <= 3:
+    if digitos.isdigit() and len(digitos) >= 1 and len(digitos) <= 3:
         return "OC-" + digitos.zfill(3)
     return None
 
@@ -743,16 +718,17 @@ def pausar():
     input(pintar("\nPressione Enter para continuar...", "cinza"))
 
 
-# O resumo (hash) permite conferir a senha sem armazená-la no código.
+# Calcula o resumo criptográfico da senha.
 def resumo_da_senha(senha):
-    return hashlib.sha256(senha.encode("utf-8")).hexdigest()
+    bytes_da_senha = senha.encode("utf-8")
+    return hashlib.sha256(bytes_da_senha).hexdigest()
 
 
 def senha_gestor_correta(senha):
     return resumo_da_senha(senha) == RESUMO_SENHA_GESTOR
 
 
-# Até três tentativas; a digitação não aparece na tela e a entrada em branco cancela.
+# Solicita a senha em até três tentativas.
 def autenticar_gestor():
     print()
     print("Acesso restrito ao gestor do bairro. A senha não é exibida durante a digitação.")
@@ -775,11 +751,9 @@ def autenticar_gestor():
     return False
 
 
-# =============================================================================
-# PARTE 7 - Regras de cadastro, atualização de situação e agenda
-# =============================================================================
+# Parte 7 - Regras de cadastro, atualização de situação e agenda
 
-# Pendente: não concluída nem recusada.
+# Pendente: nem concluída nem recusada.
 def esta_pendente(ocorrencia):
     return not (ocorrencia["status"] == "CONCLUIDA" or ocorrencia["status"] == "RECUSADA")
 
@@ -790,12 +764,12 @@ def dias_em_acompanhamento(ocorrencia, dia_atual):
     return dia_atual - ocorrencia["dia_abertura"]
 
 
-# Atrasada: pendente e aberta há mais dias que o limite.
+# Atrasada: pendente há mais dias que o limite.
 def esta_atrasada(ocorrencia, dia_atual):
     return esta_pendente(ocorrencia) and (dia_atual - ocorrencia["dia_abertura"]) > LIMITE_DIAS_ATRASO
 
 
-# Ocorrência pendente de mesma categoria no mesmo local.
+# Procura ocorrência pendente de mesma categoria no mesmo local.
 def procurar_duplicata(estado, categoria, setor, local):
     for ocorrencia in estado["banco"]["ocorrencias"]:
         mesma_categoria = ocorrencia["categoria"] == categoria
@@ -805,7 +779,7 @@ def procurar_duplicata(estado, categoria, setor, local):
     return None
 
 
-# Devolve (True, ocorrência) ou (False, lista de inconsistências).
+# Devolve True e a ocorrência, ou False e as inconsistências.
 def cadastrar_ocorrencia(estado, categoria, setor, local, descricao, autor):
     banco = estado["banco"]
     codigo = "OC-" + str(banco["proximo_numero"]).zfill(3)
@@ -818,16 +792,16 @@ def cadastrar_ocorrencia(estado, categoria, setor, local, descricao, autor):
         return False, problemas
 
     ocorrencia = nova_ocorrencia(codigo, categoria, setor, local, descricao, banco["dia_atual"], autor)
-    banco["ocorrencias"].append(ocorrencia)      # lista: entra no conjunto
-    estado["indice"][codigo] = ocorrencia         # dicionário: acesso pelo código
-    banco["fila_triagem"].append(codigo)          # fila: entra no fim
+    banco["ocorrencias"].append(ocorrencia)      # inclusão na lista
+    estado["indice"][codigo] = ocorrencia         # inclusão no dicionário
+    banco["fila_triagem"].append(codigo)          # entrada no fim da fila
     banco["proximo_numero"] += 1
     registrar_alteracao(estado)
     return True, ocorrencia
 
 
 def apoiar_ocorrencia(estado, codigo, codigo_morador):
-    ocorrencia = estado["indice"].get(codigo)
+    ocorrencia = buscar_por_id(estado, codigo)
     if ocorrencia is None:
         return False, "Ocorrência " + codigo + " não encontrada."
     elif not esta_pendente(ocorrencia):
@@ -846,7 +820,7 @@ def transicao_valida(situacao_atual, nova_situacao):
     return nova_situacao in TRANSICOES[situacao_atual]
 
 
-# Expressão booleana da atualização de situação, documentada no README.
+# Condição para alterar a situação de uma ocorrência.
 def pode_atualizar(estado, perfil, codigo, nova_situacao):
     perfil_gestor = perfil == PERFIL_GESTOR
     id_existe = codigo in estado["indice"]
@@ -859,7 +833,7 @@ def pode_atualizar(estado, perfil, codigo, nova_situacao):
     )
 
 
-# Altera a situação e registra o evento no histórico e na pilha.
+# Altera a situação e registra o evento.
 def atualizar_situacao(estado, perfil, codigo, nova_situacao, observacao):
     banco = estado["banco"]
 
@@ -896,14 +870,14 @@ def atualizar_situacao(estado, perfil, codigo, nova_situacao, observacao):
     if nova_situacao == "CONCLUIDA":
         ocorrencia["dia_conclusao"] = banco["dia_atual"]
     if codigo in banco["fila_triagem"]:
-        banco["fila_triagem"].remove(codigo)      # deixou de estar "não examinada"
+        banco["fila_triagem"].remove(codigo)      # saída da fila de triagem
     banco["historico"].append(evento)
-    estado["pilha"].append(evento)                # pilha: empilha no topo
+    estado["pilha"].append(evento)                # inclusão no topo da pilha
     registrar_alteracao(estado)
     return True, codigo + ": " + NOMES_SITUACAO[evento["de"]] + " -> " + NOMES_SITUACAO[nova_situacao] + "."
 
 
-# Desempilha o evento mais recente e restaura a situação anterior.
+# Desfaz a alteração mais recente.
 def desfazer_ultima(estado, perfil):
     banco = estado["banco"]
     if perfil != PERFIL_GESTOR:
@@ -911,7 +885,7 @@ def desfazer_ultima(estado, perfil):
     elif len(estado["pilha"]) == 0:
         return False, "Não há atualizações para desfazer."
     else:
-        evento = estado["pilha"].pop()            # pilha: sai o último que entrou
+        evento = estado["pilha"].pop()            # retirada do topo da pilha
         banco["historico"].pop()
         ocorrencia = estado["indice"][evento["id"]]
         ocorrencia["status"] = evento["de"]
@@ -926,11 +900,12 @@ def desfazer_ultima(estado, perfil):
         )
 
 
-# Fila: a primeira ocorrência passa para o fim.
+# Move a primeira ocorrência da fila para o fim.
 def adiar_triagem(estado):
     fila = estado["banco"]["fila_triagem"]
     if len(fila) > 1:
-        fila.append(fila.pop(0))
+        primeira = fila.pop(0)
+        fila.append(primeira)
         salvar_banco(estado)
 
 
@@ -939,12 +914,12 @@ def avancar_dia(estado, dias):
     salvar_banco(estado)
 
 
-# O evento só pode começar fora do horário de silêncio: das 8h até antes das 22h.
+# O evento deve começar fora do horário de silêncio.
 def hora_permitida(hora):
     return hora >= HORA_FIM_SILENCIO and hora < HORA_INICIO_SILENCIO
 
 
-# Devolve (True, evento) ou (False, motivo da recusa).
+# Devolve True e o evento, ou False e o motivo da recusa.
 def criar_evento_bairro(estado, perfil, tipo, titulo_evento, setor, local, dia, hora, descricao):
     banco = estado["banco"]
     titulo_limpo = limpar_texto(titulo_evento)
@@ -984,7 +959,7 @@ def buscar_evento_bairro(estado, codigo):
     return None
 
 
-# O evento cancelado permanece na agenda, marcado, para ciência dos moradores.
+# O evento cancelado permanece na agenda.
 def cancelar_evento_bairro(estado, perfil, codigo):
     evento = buscar_evento_bairro(estado, codigo)
     if perfil != PERFIL_GESTOR:
@@ -999,7 +974,7 @@ def cancelar_evento_bairro(estado, perfil, codigo):
         return True, "Evento " + codigo + " cancelado. Ele permanece na agenda, marcado como cancelado."
 
 
-# Eventos de hoje em diante, do mais próximo para o mais distante.
+# Devolve os eventos futuros em ordem de data.
 def proximos_eventos(estado):
     dia_atual = estado["banco"]["dia_atual"]
     futuros = []
@@ -1011,15 +986,16 @@ def proximos_eventos(estado):
     return ordenar_por_insercao(futuros, datas)
 
 
-# =============================================================================
-# PARTE 8 - Consultas, busca e ordenação
-# =============================================================================
+# Parte 8 - Consultas, busca e ordenação
 
+# Consulta direta no dicionário. Devolve None se o código não existir.
 def buscar_por_id(estado, codigo):
-    return estado["indice"].get(codigo)
+    if codigo in estado["indice"]:
+        return estado["indice"][codigo]
+    return None
 
 
-# Busca binária sobre lista ordenada por código.
+# Busca binária em lista ordenada por código.
 def busca_binaria_por_id(ocorrencias_ordenadas, codigo):
     inicio = 0
     fim = len(ocorrencias_ordenadas) - 1
@@ -1035,7 +1011,7 @@ def busca_binaria_por_id(ocorrencias_ordenadas, codigo):
     return None
 
 
-# Busca sequencial; filtros não informados não restringem o resultado.
+# Busca sequencial com filtros opcionais.
 def filtrar(estado, categoria=None, situacao=None, setor=None, autor=None,
             somente_pendentes=False, somente_atrasadas=False):
     dia_atual = estado["banco"]["dia_atual"]
@@ -1054,21 +1030,20 @@ def filtrar(estado, categoria=None, situacao=None, setor=None, autor=None,
     return encontradas
 
 
-# Ordenação por inserção. "valores" traz, na mesma posição, o valor de comparação
-# de cada item. Devolve nova lista de itens, do menor valor para o maior.
+# Ordenação por inserção. A lista valores contém o critério de comparação de cada item.
 def ordenar_por_insercao(itens, valores):
     itens = list(itens)
     valores = list(valores)
-    for i in range(1, len(itens)):
-        item_atual = itens[i]
-        valor_atual = valores[i]
-        j = i - 1
-        while j >= 0 and valores[j] > valor_atual:
-            itens[j + 1] = itens[j]
-            valores[j + 1] = valores[j]
-            j -= 1
-        itens[j + 1] = item_atual
-        valores[j + 1] = valor_atual
+    for posicao in range(1, len(itens)):
+        item_atual = itens[posicao]
+        valor_atual = valores[posicao]
+        anterior = posicao - 1
+        while anterior >= 0 and valores[anterior] > valor_atual:
+            itens[anterior + 1] = itens[anterior]
+            valores[anterior + 1] = valores[anterior]
+            anterior -= 1
+        itens[anterior + 1] = item_atual
+        valores[anterior + 1] = valor_atual
     return itens
 
 
@@ -1079,7 +1054,7 @@ def ordenar_por_codigo(ocorrencias):
     return ordenar_por_insercao(ocorrencias, valores)
 
 
-# Mais antiga primeiro; no empate de dia, prevalece o menor código.
+# Ordena da mais antiga para a mais recente.
 def ordenar_por_antiguidade(ocorrencias):
     valores = []
     for ocorrencia in ocorrencias:
@@ -1087,7 +1062,7 @@ def ordenar_por_antiguidade(ocorrencias):
     return ordenar_por_insercao(ocorrencias, valores)
 
 
-# Mais apoios primeiro (por isso o sinal negativo); no empate, a mais antiga.
+# Ordena da mais apoiada para a menos apoiada.
 def ordenar_por_apoios(ocorrencias):
     valores = []
     for ocorrencia in ocorrencias:
@@ -1110,19 +1085,16 @@ def codigos_de(itens):
     return lista
 
 
-# =============================================================================
-# PARTE 9 - Indicadores
-# Calculados com laços e operações aritméticas sobre a matriz e a lista.
-# =============================================================================
+# Parte 9 - Indicadores
 
-# Percentual de parte em total; total zero resulta em 0.
+# Percentual de parte em relação ao total.
 def proporcao(parte, total):
     if total == 0:
         return 0.0
     return parte / total * 100
 
 
-# Total por categoria.
+# Total de cada categoria.
 def somar_linhas(matriz):
     totais = []
     for linha_matriz in matriz:
@@ -1133,7 +1105,7 @@ def somar_linhas(matriz):
     return totais
 
 
-# Total por situação.
+# Total de cada situação.
 def somar_colunas(matriz):
     totais = [0] * len(SITUACOES)
     for linha_matriz in matriz:
@@ -1161,7 +1133,10 @@ def calcular_indicadores(estado):
 
     for ocorrencia in ocorrencias:
         local = ocorrencia["local"]
-        por_local[local] = por_local.get(local, 0) + 1
+        if local in por_local:
+            por_local[local] += 1
+        else:
+            por_local[local] = 1
 
         if esta_pendente(ocorrencia):
             pendentes += 1
@@ -1170,7 +1145,7 @@ def calcular_indicadores(estado):
             if mais_antiga is None or ocorrencia["dia_abertura"] < mais_antiga["dia_abertura"]:
                 mais_antiga = ocorrencia
 
-        # tempo até a conclusão = dia da conclusão - dia da abertura
+        # tempo de conclusão: dia da conclusão menos dia da abertura
         if ocorrencia["status"] == "CONCLUIDA":
             dias = ocorrencia["dia_conclusao"] - ocorrencia["dia_abertura"]
             posicao = CATEGORIAS.index(ocorrencia["categoria"])
@@ -1191,9 +1166,11 @@ def calcular_indicadores(estado):
             tempo_medio_categoria.append(None)
 
     local_mais_citado = None
+    quantidade_local = 0
     for local in por_local:
-        if local_mais_citado is None or por_local[local] > por_local[local_mais_citado]:
+        if por_local[local] > quantidade_local:
             local_mais_citado = local
+            quantidade_local = por_local[local]
 
     return {
         "total": total,
@@ -1207,7 +1184,7 @@ def calcular_indicadores(estado):
         "tempo_medio": tempo_medio,
         "tempo_medio_categoria": tempo_medio_categoria,
         "local_mais_citado": local_mais_citado,
-        "quantidade_local": por_local.get(local_mais_citado, 0),
+        "quantidade_local": quantidade_local,
     }
 
 
@@ -1248,14 +1225,11 @@ def interpretar_indicadores(indicadores):
     return frases
 
 
-# =============================================================================
-# PARTE 10 - Exibição no terminal
-# A situação é sempre escrita por extenso; a cor apenas reforça a informação.
-# =============================================================================
+# Parte 10 - Exibição no terminal
 
-# Uma casa decimal, com vírgula.
+# Formata o número com uma casa decimal e vírgula.
 def formatar_numero(valor):
-    return ("%.1f" % valor).replace(".", ",")
+    return str(round(valor, 1)).replace(".", ",")
 
 
 def linha(caractere="-"):
@@ -1301,17 +1275,17 @@ def mostrar_resultado(sucesso, mensagem):
         mensagem_erro(mensagem)
 
 
-# Ajusta o valor à largura da coluna; números ficam alinhados à direita.
+# Ajusta o valor à largura da coluna.
 def ajustar(valor, largura):
     texto = str(valor)
     if len(texto) > largura:
         texto = texto[:largura - 3] + "..."
-    if isinstance(valor, int):
+    if type(valor) == int:
         return texto.rjust(largura)
     return texto.ljust(largura)
 
 
-# Nomes de situação recebem a cor correspondente; os demais valores ficam sem cor.
+# Devolve a cor associada ao nome de uma situação.
 def cor_da_celula(valor):
     for situacao in SITUACOES:
         if valor == NOMES_SITUACAO[situacao]:
@@ -1331,7 +1305,7 @@ def linha_tabela(valores, larguras, negrito):
     return texto
 
 
-# Com total_no_fim=True, a última linha é separada por uma divisória.
+# Exibe uma tabela. O parâmetro total_no_fim separa a última linha.
 def mostrar_tabela(cabecalhos, larguras, linhas, total_no_fim=False):
     borda = "+"
     for largura in larguras:
@@ -1353,7 +1327,7 @@ def barra_proporcao(percentual, cor):
     return pintar("#" * cheios, cor) + pintar("." * (tamanho - cheios), "cinza")
 
 
-# Listagem pública: não identifica o autor do registro.
+# Listagem sem identificação do autor.
 def listar_ocorrencias(ocorrencias, mensagem_vazia):
     if len(ocorrencias) == 0:
         print(mensagem_vazia)
@@ -1370,7 +1344,7 @@ def listar_ocorrencias(ocorrencias, mensagem_vazia):
     print("Total listado: " + str(len(ocorrencias)))
 
 
-# O autor do registro é exibido somente ao gestor.
+# Exibe os dados da ocorrência. O autor aparece somente para o gestor.
 def mostrar_ocorrencia(estado, ocorrencia, perfil):
     dia_atual = estado["banco"]["dia_atual"]
     situacao = ocorrencia["status"]
@@ -1440,7 +1414,7 @@ def linha_proporcao(nome, quantidade, total, cor):
     )
 
 
-# Com completo=True (gestor), exibe também as proporções e os tempos por categoria.
+# Exibe o painel. A versão completa é destinada ao gestor.
 def mostrar_painel(estado, completo):
     indicadores = calcular_indicadores(estado)
     total = indicadores["total"]
@@ -1542,7 +1516,7 @@ def mostrar_agenda(estado):
     print("Eventos listados: " + str(len(eventos)))
 
 
-# Exibe, no menu do morador, o próximo evento confirmado.
+# Exibe o próximo evento confirmado.
 def aviso_proximo_evento(estado):
     for evento in proximos_eventos(estado):
         if not evento["cancelado"]:
@@ -1552,7 +1526,7 @@ def aviso_proximo_evento(estado):
             return
 
 
-# Divide o texto em linhas que cabem na largura, sem cortar palavras.
+# Divide o texto em linhas, sem cortar palavras.
 def quebrar_texto(texto, largura):
     linhas = []
     atual = ""
@@ -1616,9 +1590,7 @@ def mostrar_sobre():
     print("A casa e o nome de quem registrou não aparecem nas listagens do bairro.")
 
 
-# =============================================================================
-# PARTE 11 - Menus do morador e do gestor
-# =============================================================================
+# Parte 11 - Menus do morador e do gestor
 
 def escolher_categoria():
     posicao = escolher("Categoria:", nomes_de(CATEGORIAS, NOMES_CATEGORIA))
@@ -1644,7 +1616,7 @@ def escolher_setor():
     return SETORES[posicao]
 
 
-# Devolve (lado, local) escolhidos, ou None quando o usuário volta.
+# Devolve o lado e o local escolhidos, ou None.
 def escolher_local(pergunta):
     setor = escolher_setor()
     if setor is None:
@@ -1665,7 +1637,7 @@ def tela_registrar(estado, morador):
         return
     setor, local = escolha
 
-    # Regra das ocorrências duplicadas: oferece apoiar o registro já existente.
+    # Verificação de ocorrência duplicada.
     parecida = procurar_duplicata(estado, categoria, setor, local)
     if parecida is not None:
         print()
@@ -1703,7 +1675,7 @@ def tela_registrar(estado, morador):
             print("  - " + problema)
 
 
-# Devolve a ocorrência consultada, ou None se o usuário voltar ou o código não existir.
+# Consulta por código. Devolve a ocorrência ou None.
 def tela_consultar_codigo(estado, perfil):
     codigo = ler_codigo()
     if codigo is None:
@@ -1716,7 +1688,7 @@ def tela_consultar_codigo(estado, perfil):
     return ocorrencia
 
 
-# O gestor dispõe de três opções adicionais de consulta.
+# Consultas por filtro. O gestor possui opções adicionais.
 def tela_filtros(estado, perfil):
     opcoes = ["Todas", "Por categoria", "Por situação", "Por lado do bairro", "Somente pendentes"]
     if perfil == PERFIL_GESTOR:
@@ -1755,7 +1727,7 @@ def tela_filtros(estado, perfil):
     listar_ocorrencias(encontradas, "Nenhuma ocorrência atende a este filtro.")
 
 
-# O morador escolhe o lado do bairro e, em seguida, o próprio cadastro.
+# Identifica o morador pelo lado do bairro e pelo cadastro.
 def identificar_morador():
     setor = escolher_setor()
     if setor is None:
@@ -1909,7 +1881,7 @@ def tela_triagem(estado):
         print(ocorrencia["id"] + " foi para o fim da fila.")
 
 
-# Oferece somente as situações permitidas a partir da situação atual.
+# Oferece apenas as situações permitidas.
 def tela_atualizar(estado):
     titulo("Atualizar situação")
     ocorrencia = tela_consultar_codigo(estado, PERFIL_GESTOR)
@@ -1929,7 +1901,7 @@ def tela_atualizar(estado):
     mostrar_resultado(sucesso, mensagem)
 
 
-# Percorre a pilha do topo para a base e exibe as oito atualizações mais recentes.
+# Exibe as oito atualizações mais recentes, do topo para a base da pilha.
 def tela_ultimas_atualizacoes(estado):
     titulo("Últimas atualizações (pilha: a mais recente primeiro)")
     pilha = estado["pilha"]
@@ -2046,7 +2018,7 @@ def menu_principal(estado):
         mostrar_opcao(2, "Entrar como gestor do bairro")
         mostrar_opcao(3, "Sobre o bairro, as categorias e as situações")
         mostrar_opcao(4, "Regras de convivência do bairro")
-        if CONFIG["cores"]:
+        if CONFIGURACAO["cores"]:
             mostrar_opcao(5, "Desativar as cores")
         else:
             mostrar_opcao(5, "Ativar as cores")
@@ -2069,15 +2041,12 @@ def menu_principal(estado):
             mostrar_regras()
             pausar()
         else:
-            CONFIG["cores"] = not CONFIG["cores"]
+            CONFIGURACAO["cores"] = not CONFIGURACAO["cores"]
 
 
-# =============================================================================
-# PARTE 12 - Conferências e ponto de entrada
-# As conferências operam sobre uma cópia em memória da base inicial e não alteram o banco.
-# =============================================================================
+# Parte 12 - Conferências e ponto de entrada
 
-# Compara o valor obtido com o esperado e registra o resultado na lista.
+# Compara o valor obtido com o esperado.
 def conferir(descricao, obtido, esperado, resultados):
     correto = obtido == esperado
     resultados.append(correto)
@@ -2089,148 +2058,150 @@ def conferir(descricao, obtido, esperado, resultados):
 
 def executar_conferencias():
     titulo("Conferências do sistema")
-    r = []
+    resultados = []
     estado = novo_estado(criar_banco_inicial(), None)
     banco = estado["banco"]
 
     print("Carga e validação")
-    conferir("12 ocorrências válidas na lista", len(banco["ocorrencias"]), 12, r)
-    conferir("3 registros defeituosos separados", len(banco["rejeitados"]), 3, r)
-    conferir("defeito 1: categoria ausente", banco["rejeitados"][0]["problemas"], ["campo obrigatório ausente: categoria"], r)
-    conferir("defeito 2: situação desconhecida", banco["rejeitados"][1]["problemas"], ["situação desconhecida: RESOLVENDO"], r)
-    conferir("defeito 3: código repetido", banco["rejeitados"][2]["problemas"], ["código repetido: OC-003"], r)
-    conferir("17 atualizações no histórico", len(banco["historico"]), 17, r)
-    conferir("próximo código livre é o 15", banco["proximo_numero"], 15, r)
+    conferir("12 ocorrências válidas na lista", len(banco["ocorrencias"]), 12, resultados)
+    conferir("3 registros defeituosos separados", len(banco["rejeitados"]), 3, resultados)
+    conferir("defeito 1: categoria ausente", banco["rejeitados"][0]["problemas"], ["campo obrigatório ausente: categoria"], resultados)
+    conferir("defeito 2: situação desconhecida", banco["rejeitados"][1]["problemas"], ["situação desconhecida: RESOLVENDO"], resultados)
+    conferir("defeito 3: código repetido", banco["rejeitados"][2]["problemas"], ["código repetido: OC-003"], resultados)
+    conferir("17 atualizações no histórico", len(banco["historico"]), 17, resultados)
+    conferir("próximo código livre é o 15", banco["proximo_numero"], 15, resultados)
 
     print("Bairro, moradores e regras")
-    conferir("28 moradores fictícios cadastrados", len(MORADORES), 28, r)
+    conferir("28 moradores fictícios cadastrados", len(MORADORES), 28, resultados)
     casas_validas = 0
     for morador in MORADORES:
-        if 1 <= morador["casa"] <= casas_do_quarteirao(morador["quarteirao"]):
+        if morador["casa"] >= 1 and morador["casa"] <= casas_do_quarteirao(morador["quarteirao"]):
             casas_validas += 1
-    conferir("toda casa de morador existe no mapa", casas_validas, 28, r)
-    conferir("morador USR009 fica no Lado Oeste", buscar_morador("USR009")["setor"], "OESTE", r)
-    conferir("17 regras de convivência", len(REGRAS_BAIRRO), 17, r)
+    conferir("toda casa de morador existe no mapa", casas_validas, 28, resultados)
+    conferir("morador USR009 fica no Lado Oeste", buscar_morador("USR009")["setor"], "OESTE", resultados)
+    conferir("17 regras de convivência", len(REGRAS_BAIRRO), 17, resultados)
     maior_trecho = 0
     for trecho in quebrar_texto(REGRAS_BAIRRO[0][1][0], 40):
         if len(trecho) > maior_trecho:
             maior_trecho = len(trecho)
-    conferir("quebra de texto respeita a largura", maior_trecho <= 40, True, r)
+    conferir("quebra de texto respeita a largura", maior_trecho <= 40, True, resultados)
 
     print("Estruturas")
-    conferir("dicionário alcança OC-007", buscar_por_id(estado, "OC-007")["local"], "Escola Municipal Caminhos do Sol", r)
-    conferir("código inexistente devolve None", buscar_por_id(estado, "OC-999"), None, r)
-    conferir("fila de triagem por ordem de registro", banco["fila_triagem"], ["OC-009", "OC-010", "OC-011", "OC-012"], r)
-    conferir("topo da pilha é a atualização mais recente", estado["pilha"][-1]["id"], "OC-008", r)
-    conferir("hierarquia Lado Leste > Acessibilidade", estado["hierarquia"][NOME_BAIRRO]["LESTE"]["ACESSIBILIDADE"], ["OC-003", "OC-011"], r)
-    conferir("matriz: linha de Conservação", estado["matriz"][3], [1, 0, 2, 0, 0], r)
-    conferir("matriz: linha de Limpeza", estado["matriz"][2], [1, 0, 0, 1, 1], r)
+    conferir("dicionário alcança OC-007", buscar_por_id(estado, "OC-007")["local"], "Escola Municipal Caminhos do Sol", resultados)
+    conferir("código inexistente devolve None", buscar_por_id(estado, "OC-999"), None, resultados)
+    conferir("fila de triagem por ordem de registro", banco["fila_triagem"], ["OC-009", "OC-010", "OC-011", "OC-012"], resultados)
+    conferir("topo da pilha é a atualização mais recente", estado["pilha"][-1]["id"], "OC-008", resultados)
+    conferir("hierarquia Lado Leste > Acessibilidade", estado["hierarquia"][NOME_BAIRRO]["LESTE"]["ACESSIBILIDADE"], ["OC-003", "OC-011"], resultados)
+    conferir("matriz: linha de Conservação", estado["matriz"][3], [1, 0, 2, 0, 0], resultados)
+    conferir("matriz: linha de Limpeza", estado["matriz"][2], [1, 0, 0, 1, 1], resultados)
 
     print("Busca, filtros e ordenação")
-    invertida = list(reversed(banco["ocorrencias"]))
+    invertida = []
+    for posicao in range(len(banco["ocorrencias"]) - 1, -1, -1):
+        invertida.append(banco["ocorrencias"][posicao])
     ordenadas = ordenar_por_codigo(invertida)
-    conferir("ordenação por código", codigos_de(ordenadas)[:3], ["OC-001", "OC-002", "OC-003"], r)
-    conferir("ordenação não altera a lista original", invertida[0]["id"], "OC-012", r)
-    conferir("busca binária encontra o mesmo que o dicionário", busca_binaria_por_id(ordenadas, "OC-010") is buscar_por_id(estado, "OC-010"), True, r)
-    conferir("busca binária: código inexistente", busca_binaria_por_id(ordenadas, "OC-500"), None, r)
-    conferir("filtro: abertas de iluminação", codigos_de(filtrar(estado, categoria="ILUMINACAO", situacao="ABERTA")), ["OC-009"], r)
-    conferir("filtro: pendentes", len(filtrar(estado, somente_pendentes=True)), 8, r)
-    conferir("filtro: atrasadas", codigos_de(filtrar(estado, somente_atrasadas=True)), ["OC-004", "OC-005", "OC-007"], r)
-    conferir("ordenação: mais antiga primeiro", codigos_de(ordenar_por_antiguidade(invertida))[:3], ["OC-001", "OC-002", "OC-003"], r)
+    conferir("ordenação por código", codigos_de(ordenadas)[:3], ["OC-001", "OC-002", "OC-003"], resultados)
+    conferir("ordenação não altera a lista original", invertida[0]["id"], "OC-012", resultados)
+    conferir("busca binária encontra o mesmo que o dicionário", busca_binaria_por_id(ordenadas, "OC-010") is buscar_por_id(estado, "OC-010"), True, resultados)
+    conferir("busca binária: código inexistente", busca_binaria_por_id(ordenadas, "OC-500"), None, resultados)
+    conferir("filtro: abertas de iluminação", codigos_de(filtrar(estado, categoria="ILUMINACAO", situacao="ABERTA")), ["OC-009"], resultados)
+    conferir("filtro: pendentes", len(filtrar(estado, somente_pendentes=True)), 8, resultados)
+    conferir("filtro: atrasadas", codigos_de(filtrar(estado, somente_atrasadas=True)), ["OC-004", "OC-005", "OC-007"], resultados)
+    conferir("ordenação: mais antiga primeiro", codigos_de(ordenar_por_antiguidade(invertida))[:3], ["OC-001", "OC-002", "OC-003"], resultados)
 
     print("Indicadores")
-    ind = calcular_indicadores(estado)
-    conferir("total de ocorrências", ind["total"], 12, r)
-    conferir("totais por categoria", ind["por_categoria"], [3, 3, 3, 3], r)
-    conferir("totais por situação", ind["por_situacao"], [4, 2, 2, 3, 1], r)
-    conferir("soma das situações = total", sum(ind["por_situacao"]), ind["total"], r)
-    conferir("pendências", ind["pendentes"], 8, r)
-    conferir("pendências atrasadas", ind["atrasadas"], 3, r)
-    conferir("tempo médio até a conclusão = (4 + 7 + 4) / 3", ind["tempo_medio"], 5.0, r)
-    conferir("tempo médio por categoria", ind["tempo_medio_categoria"], [4.0, 4.0, 7.0, None], r)
-    conferir("pendência mais antiga", ind["mais_antiga"]["id"], "OC-004", r)
-    conferir("local mais citado é a Praça dos Encontros", ind["local_mais_citado"], "Praça dos Encontros", r)
-    conferir("proporção de abertas", formatar_numero(proporcao(4, 12)), "33,3", r)
-    conferir("proporção com total zero", proporcao(1, 0), 0.0, r)
+    indicadores = calcular_indicadores(estado)
+    conferir("total de ocorrências", indicadores["total"], 12, resultados)
+    conferir("totais por categoria", indicadores["por_categoria"], [3, 3, 3, 3], resultados)
+    conferir("totais por situação", indicadores["por_situacao"], [4, 2, 2, 3, 1], resultados)
+    conferir("soma das situações = total", sum(indicadores["por_situacao"]), indicadores["total"], resultados)
+    conferir("pendências", indicadores["pendentes"], 8, resultados)
+    conferir("pendências atrasadas", indicadores["atrasadas"], 3, resultados)
+    conferir("tempo médio até a conclusão = (4 + 7 + 4) / 3", indicadores["tempo_medio"], 5.0, resultados)
+    conferir("tempo médio por categoria", indicadores["tempo_medio_categoria"], [4.0, 4.0, 7.0, None], resultados)
+    conferir("pendência mais antiga", indicadores["mais_antiga"]["id"], "OC-004", resultados)
+    conferir("local mais citado é a Praça dos Encontros", indicadores["local_mais_citado"], "Praça dos Encontros", resultados)
+    conferir("proporção de abertas", formatar_numero(proporcao(4, 12)), "33,3", resultados)
+    conferir("proporção com total zero", proporcao(1, 0), 0.0, resultados)
 
     print("Regras de atualização")
-    conferir("morador não altera situação", atualizar_situacao(estado, PERFIL_MORADOR, "OC-009", "EM_ANALISE", "")[0], False, r)
-    conferir("código inexistente é recusado", atualizar_situacao(estado, PERFIL_GESTOR, "OC-999", "EM_ANALISE", "")[0], False, r)
-    conferir("situação desconhecida é recusada", atualizar_situacao(estado, PERFIL_GESTOR, "OC-009", "RESOLVIDA", "")[0], False, r)
-    conferir("não pula de Aberta para Concluída", atualizar_situacao(estado, PERFIL_GESTOR, "OC-009", "CONCLUIDA", "")[0], False, r)
-    conferir("ocorrência concluída não muda mais", atualizar_situacao(estado, PERFIL_GESTOR, "OC-001", "EM_ANALISE", "")[0], False, r)
-    conferir("Aberta -> Em análise é aceita", atualizar_situacao(estado, PERFIL_GESTOR, "OC-009", "EM_ANALISE", "teste")[0], True, r)
-    conferir("a ocorrência saiu da fila", banco["fila_triagem"], ["OC-010", "OC-011", "OC-012"], r)
-    conferir("evento empilhado", estado["pilha"][-1]["id"], "OC-009", r)
-    conferir("matriz atualizada (Iluminação)", estado["matriz"][0], [0, 2, 0, 1, 0], r)
-    conferir("desfazer devolve a situação anterior", desfazer_ultima(estado, PERFIL_GESTOR)[0], True, r)
-    conferir("situação restaurada", buscar_por_id(estado, "OC-009")["status"], "ABERTA", r)
-    conferir("voltou para o início da fila", banco["fila_triagem"][0], "OC-009", r)
-    conferir("histórico voltou a 17 eventos", len(banco["historico"]), 17, r)
+    conferir("morador não altera situação", atualizar_situacao(estado, PERFIL_MORADOR, "OC-009", "EM_ANALISE", "")[0], False, resultados)
+    conferir("código inexistente é recusado", atualizar_situacao(estado, PERFIL_GESTOR, "OC-999", "EM_ANALISE", "")[0], False, resultados)
+    conferir("situação desconhecida é recusada", atualizar_situacao(estado, PERFIL_GESTOR, "OC-009", "RESOLVIDA", "")[0], False, resultados)
+    conferir("não pula de Aberta para Concluída", atualizar_situacao(estado, PERFIL_GESTOR, "OC-009", "CONCLUIDA", "")[0], False, resultados)
+    conferir("ocorrência concluída não muda mais", atualizar_situacao(estado, PERFIL_GESTOR, "OC-001", "EM_ANALISE", "")[0], False, resultados)
+    conferir("Aberta -> Em análise é aceita", atualizar_situacao(estado, PERFIL_GESTOR, "OC-009", "EM_ANALISE", "teste")[0], True, resultados)
+    conferir("a ocorrência saiu da fila", banco["fila_triagem"], ["OC-010", "OC-011", "OC-012"], resultados)
+    conferir("evento empilhado", estado["pilha"][-1]["id"], "OC-009", resultados)
+    conferir("matriz atualizada (Iluminação)", estado["matriz"][0], [0, 2, 0, 1, 0], resultados)
+    conferir("desfazer devolve a situação anterior", desfazer_ultima(estado, PERFIL_GESTOR)[0], True, resultados)
+    conferir("situação restaurada", buscar_por_id(estado, "OC-009")["status"], "ABERTA", resultados)
+    conferir("voltou para o início da fila", banco["fila_triagem"][0], "OC-009", resultados)
+    conferir("histórico voltou a 17 eventos", len(banco["historico"]), 17, resultados)
     adiar_triagem(estado)
-    conferir("adiar manda a primeira para o fim da fila", banco["fila_triagem"], ["OC-010", "OC-011", "OC-012", "OC-009"], r)
+    conferir("adiar manda a primeira para o fim da fila", banco["fila_triagem"], ["OC-010", "OC-011", "OC-012", "OC-009"], resultados)
 
     print("Cadastro")
     sucesso, nova = cadastrar_ocorrencia(estado, "LIMPEZA", "OESTE", "Rua das Andorinhas", "Folhas acumuladas na calçada.", "USR006")
-    conferir("cadastro válido é aceito", sucesso, True, r)
-    conferir("código gerado em sequência", nova["id"], "OC-015", r)
-    conferir("nova ocorrência entra no fim da fila", banco["fila_triagem"][-1], "OC-015", r)
-    conferir("cadastro sem categoria é recusado", cadastrar_ocorrencia(estado, "", "OESTE", "Rua das Andorinhas", "Sem categoria.", "USR006")[0], False, r)
-    conferir("categoria desconhecida é recusada", cadastrar_ocorrencia(estado, "TRANSITO", "OESTE", "Rua das Andorinhas", "Semáforo quebrado.", "USR006")[0], False, r)
-    conferir("local de outro lado é recusado", cadastrar_ocorrencia(estado, "LIMPEZA", "OESTE", "Praça dos Encontros", "Local trocado.", "USR006")[0], False, r)
-    conferir("descrição em branco é recusada", cadastrar_ocorrencia(estado, "LIMPEZA", "OESTE", "Rua das Andorinhas", "   ", "USR006")[0], False, r)
-    conferir("duplicata pendente é percebida", procurar_duplicata(estado, "LIMPEZA", "OESTE", "Rua das Andorinhas")["id"], "OC-015", r)
-    conferir("local sem pendência não acusa duplicata", procurar_duplicata(estado, "ILUMINACAO", "LESTE", "Rua das Estrelas"), None, r)
+    conferir("cadastro válido é aceito", sucesso, True, resultados)
+    conferir("código gerado em sequência", nova["id"], "OC-015", resultados)
+    conferir("nova ocorrência entra no fim da fila", banco["fila_triagem"][-1], "OC-015", resultados)
+    conferir("cadastro sem categoria é recusado", cadastrar_ocorrencia(estado, "", "OESTE", "Rua das Andorinhas", "Sem categoria.", "USR006")[0], False, resultados)
+    conferir("categoria desconhecida é recusada", cadastrar_ocorrencia(estado, "TRANSITO", "OESTE", "Rua das Andorinhas", "Semáforo quebrado.", "USR006")[0], False, resultados)
+    conferir("local de outro lado é recusado", cadastrar_ocorrencia(estado, "LIMPEZA", "OESTE", "Praça dos Encontros", "Local trocado.", "USR006")[0], False, resultados)
+    conferir("descrição em branco é recusada", cadastrar_ocorrencia(estado, "LIMPEZA", "OESTE", "Rua das Andorinhas", "   ", "USR006")[0], False, resultados)
+    conferir("duplicata pendente é percebida", procurar_duplicata(estado, "LIMPEZA", "OESTE", "Rua das Andorinhas")["id"], "OC-015", resultados)
+    conferir("local sem pendência não acusa duplicata", procurar_duplicata(estado, "ILUMINACAO", "LESTE", "Rua das Estrelas"), None, resultados)
 
     print("Apoios")
-    conferir("apoio de outro morador é aceito", apoiar_ocorrencia(estado, "OC-015", "USR017")[0], True, r)
-    conferir("o mesmo morador não apoia duas vezes", apoiar_ocorrencia(estado, "OC-015", "USR017")[0], False, r)
-    conferir("o autor não apoia a própria ocorrência", apoiar_ocorrencia(estado, "OC-015", "USR006")[0], False, r)
-    conferir("ocorrência encerrada não recebe apoio", apoiar_ocorrencia(estado, "OC-001", "USR017")[0], False, r)
-    conferir("apoio em código inexistente é recusado", apoiar_ocorrencia(estado, "OC-999", "USR017")[0], False, r)
-    conferir("a mais apoiada vem primeiro na ordenação", ordenar_por_apoios(filtrar(estado, somente_pendentes=True))[0]["id"], "OC-015", r)
+    conferir("apoio de outro morador é aceito", apoiar_ocorrencia(estado, "OC-015", "USR017")[0], True, resultados)
+    conferir("o mesmo morador não apoia duas vezes", apoiar_ocorrencia(estado, "OC-015", "USR017")[0], False, resultados)
+    conferir("o autor não apoia a própria ocorrência", apoiar_ocorrencia(estado, "OC-015", "USR006")[0], False, resultados)
+    conferir("ocorrência encerrada não recebe apoio", apoiar_ocorrencia(estado, "OC-001", "USR017")[0], False, resultados)
+    conferir("apoio em código inexistente é recusado", apoiar_ocorrencia(estado, "OC-999", "USR017")[0], False, resultados)
+    conferir("a mais apoiada vem primeiro na ordenação", ordenar_por_apoios(filtrar(estado, somente_pendentes=True))[0]["id"], "OC-015", resultados)
 
     print("Entrada de dados e senha")
-    conferir("código '14' vira OC-014", normalizar_id("14"), "OC-014", r)
-    conferir("código 'oc-7' vira OC-007", normalizar_id("oc-7"), "OC-007", r)
-    conferir("código com letras é inválido", normalizar_id("abc"), None, r)
-    conferir("texto: remove espaços repetidos", limpar_texto("  poste   apagado  "), "poste apagado", r)
-    conferir("senha correta é aceita", senha_gestor_correta("12345"), True, r)
-    conferir("senha errada é recusada", senha_gestor_correta("123456"), False, r)
-    conferir("o código armazena o resumo de 64 caracteres, e não a senha", len(RESUMO_SENHA_GESTOR), 64, r)
+    conferir("código '14' vira OC-014", normalizar_id("14"), "OC-014", resultados)
+    conferir("código 'oc-7' vira OC-007", normalizar_id("oc-7"), "OC-007", resultados)
+    conferir("código com letras é inválido", normalizar_id("abc"), None, resultados)
+    conferir("texto: remove espaços repetidos", limpar_texto("  poste   apagado  "), "poste apagado", resultados)
+    conferir("senha correta é aceita", senha_gestor_correta("12345"), True, resultados)
+    conferir("senha errada é recusada", senha_gestor_correta("123456"), False, resultados)
+    conferir("o código armazena o resumo de 64 caracteres, e não a senha", len(RESUMO_SENHA_GESTOR), 64, resultados)
 
     print("Agenda do bairro")
-    conferir("morador não cria evento", criar_evento_bairro(estado, PERFIL_MORADOR, "FESTA", "Festa junina", "LESTE", "Praça dos Encontros", 15, 18, "Confraternização.")[0], False, r)
-    conferir("tipo desconhecido é recusado", criar_evento_bairro(estado, PERFIL_GESTOR, "SHOW", "Show", "LESTE", "Praça dos Encontros", 15, 18, "Música ao vivo.")[0], False, r)
-    conferir("evento em dia passado é recusado", criar_evento_bairro(estado, PERFIL_GESTOR, "FESTA", "Festa junina", "LESTE", "Praça dos Encontros", 3, 18, "Confraternização.")[0], False, r)
-    conferir("evento às 23h fere o horário de silêncio", criar_evento_bairro(estado, PERFIL_GESTOR, "FESTA", "Festa junina", "LESTE", "Praça dos Encontros", 15, 23, "Confraternização.")[0], False, r)
-    conferir("evento às 7h fere o horário de silêncio", criar_evento_bairro(estado, PERFIL_GESTOR, "MUTIRAO", "Mutirão", "LESTE", "Praça dos Encontros", 15, 7, "Limpeza da praça.")[0], False, r)
-    conferir("local de outro lado é recusado", criar_evento_bairro(estado, PERFIL_GESTOR, "FESTA", "Festa junina", "OESTE", "Praça dos Encontros", 15, 18, "Confraternização.")[0], False, r)
+    conferir("morador não cria evento", criar_evento_bairro(estado, PERFIL_MORADOR, "FESTA", "Festa junina", "LESTE", "Praça dos Encontros", 15, 18, "Confraternização.")[0], False, resultados)
+    conferir("tipo desconhecido é recusado", criar_evento_bairro(estado, PERFIL_GESTOR, "SHOW", "Show", "LESTE", "Praça dos Encontros", 15, 18, "Música ao vivo.")[0], False, resultados)
+    conferir("evento em dia passado é recusado", criar_evento_bairro(estado, PERFIL_GESTOR, "FESTA", "Festa junina", "LESTE", "Praça dos Encontros", 3, 18, "Confraternização.")[0], False, resultados)
+    conferir("evento às 23h fere o horário de silêncio", criar_evento_bairro(estado, PERFIL_GESTOR, "FESTA", "Festa junina", "LESTE", "Praça dos Encontros", 15, 23, "Confraternização.")[0], False, resultados)
+    conferir("evento às 7h fere o horário de silêncio", criar_evento_bairro(estado, PERFIL_GESTOR, "MUTIRAO", "Mutirão", "LESTE", "Praça dos Encontros", 15, 7, "Limpeza da praça.")[0], False, resultados)
+    conferir("local de outro lado é recusado", criar_evento_bairro(estado, PERFIL_GESTOR, "FESTA", "Festa junina", "OESTE", "Praça dos Encontros", 15, 18, "Confraternização.")[0], False, resultados)
     sucesso, festa = criar_evento_bairro(estado, PERFIL_GESTOR, "FESTA", "Festa junina", "LESTE", "Praça dos Encontros", 20, 18, "Confraternização.")
-    conferir("festa válida é criada", sucesso, True, r)
-    conferir("código do evento em sequência", festa["id"], "EV-001", r)
+    conferir("festa válida é criada", sucesso, True, resultados)
+    conferir("código do evento em sequência", festa["id"], "EV-001", resultados)
     criar_evento_bairro(estado, PERFIL_GESTOR, "REUNIAO", "Reunião de moradores", "OESTE", "Escola Municipal Caminhos do Sol", 14, 19, "Pauta: iluminação.")
-    conferir("agenda em ordem de data", codigos_de(proximos_eventos(estado)), ["EV-002", "EV-001"], r)
-    conferir("morador não cancela evento", cancelar_evento_bairro(estado, PERFIL_MORADOR, "EV-001")[0], False, r)
-    conferir("gestor cancela evento", cancelar_evento_bairro(estado, PERFIL_GESTOR, "EV-001")[0], True, r)
-    conferir("evento cancelado permanece na agenda, marcado", buscar_evento_bairro(estado, "EV-001")["cancelado"], True, r)
-    conferir("cancelar duas vezes é recusado", cancelar_evento_bairro(estado, PERFIL_GESTOR, "EV-001")[0], False, r)
+    conferir("agenda em ordem de data", codigos_de(proximos_eventos(estado)), ["EV-002", "EV-001"], resultados)
+    conferir("morador não cancela evento", cancelar_evento_bairro(estado, PERFIL_MORADOR, "EV-001")[0], False, resultados)
+    conferir("gestor cancela evento", cancelar_evento_bairro(estado, PERFIL_GESTOR, "EV-001")[0], True, resultados)
+    conferir("evento cancelado permanece na agenda, marcado", buscar_evento_bairro(estado, "EV-001")["cancelado"], True, resultados)
+    conferir("cancelar duas vezes é recusado", cancelar_evento_bairro(estado, PERFIL_GESTOR, "EV-001")[0], False, resultados)
 
     print("Banco em JSON")
     copia = json.loads(json.dumps(banco))
-    conferir("gravar e ler devolve os mesmos dados", copia, banco, r)
+    conferir("gravar e ler devolve os mesmos dados", copia, banco, resultados)
 
-    aprovadas = r.count(True)
+    aprovadas = resultados.count(True)
     print()
     linha()
-    print("Conferências aprovadas: " + str(aprovadas) + " de " + str(len(r)))
+    print("Conferências aprovadas: " + str(aprovadas) + " de " + str(len(resultados)))
     linha()
-    return aprovadas == len(r)
+    return aprovadas == len(resultados)
 
 
 def principal():
     if os.name == "nt":
-        os.system("")  # ativa a interpretação das cores no terminal do Windows
+        os.system("")  # ativa as cores no terminal do Windows
 
     caminho = caminho_banco()
     estado = novo_estado(carregar_banco(caminho), caminho)
