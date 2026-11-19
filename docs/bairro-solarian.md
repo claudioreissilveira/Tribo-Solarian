@@ -1,6 +1,10 @@
-# Solarian — guia do bairro e convivência
+# Solarian: guia do bairro e convivência
 
-Este documento descreve o bairro fictício Solarian, utilizado como cenário do protótipo Neighborhood Action Dashboard: mapa, vias, pontos de referência, moradores simulados e regras de convivência. Nomes, horários e procedimentos são simulados e não representam legislação nem serviços de um município real.
+O Bairro Solarian é uma simulação realista de um sistema de gestão comunitária, desenvolvida para o desafio Neighborhood Action Dashboard. O projeto parte de situações do cotidiano de um bairro, como a lâmpada apagada, a calçada sem acesso e o lixo acumulado, e reproduz funcionalidades presentes em serviços reais de atendimento ao cidadão: registro de ocorrências, triagem, acompanhamento de cada etapa, apoio a registros existentes, indicadores e agenda de eventos.
+
+O objetivo é compreender a rotina dos moradores e demonstrar como a organização das informações facilita a vida em comunidade, aproximando quem relata um problema de quem administra o bairro e tornando visível o andamento de cada solicitação.
+
+Para que a simulação se aproxime do uso real, o cenário foi construído com mapa, vias, pontos de referência, moradores e regras de convivência próprios, descritos neste documento. Nomes, horários e procedimentos são fictícios e não representam legislação nem serviços de um município real.
 
 ![Mapa do bairro Solarian](../images/BairroSolarian.png)
 

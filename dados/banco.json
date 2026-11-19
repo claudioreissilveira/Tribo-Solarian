@@ -1,0 +1,356 @@
+{
+  "versao": 3,
+  "dia_atual": 12,
+  "proximo_numero": 15,
+  "ocorrencias": [
+    {
+      "id": "OC-001",
+      "categoria": "ILUMINACAO",
+      "descricao": "Três postes apagados ao redor da fonte.",
+      "setor": "LESTE",
+      "local": "Praça dos Encontros",
+      "dia_abertura": 1,
+      "status": "CONCLUIDA",
+      "dia_conclusao": 5,
+      "autor": "USR024",
+      "apoios": []
+    },
+    {
+      "id": "OC-002",
+      "categoria": "LIMPEZA",
+      "descricao": "Entulho acumulado na calçada perto da esquina.",
+      "setor": "OESTE",
+      "local": "Rua das Palmeiras",
+      "dia_abertura": 1,
+      "status": "CONCLUIDA",
+      "dia_conclusao": 8,
+      "autor": "USR021",
+      "apoios": []
+    },
+    {
+      "id": "OC-003",
+      "categoria": "ACESSIBILIDADE",
+      "descricao": "Rampa de acesso com piso quebrado.",
+      "setor": "LESTE",
+      "local": "Escola Municipal Novo Amanhecer",
+      "dia_abertura": 2,
+      "status": "CONCLUIDA",
+      "dia_conclusao": 6,
+      "autor": "USR019",
+      "apoios": []
+    },
+    {
+      "id": "OC-004",
+      "categoria": "CONSERVACAO",
+      "descricao": "Alambrado da quadra solto em um dos lados.",
+      "setor": "OESTE",
+      "local": "Escola Municipal Caminhos do Sol",
+      "dia_abertura": 2,
+      "status": "EM_ATENDIMENTO",
+      "dia_conclusao": null,
+      "autor": "USR009",
+      "apoios": []
+    },
+    {
+      "id": "OC-005",
+      "categoria": "ILUMINACAO",
+      "descricao": "Lâmpada piscando durante a noite toda.",
+      "setor": "OESTE",
+      "local": "Rua das Acácias",
+      "dia_abertura": 3,
+      "status": "EM_ANALISE",
+      "dia_conclusao": null,
+      "autor": "USR016",
+      "apoios": []
+    },
+    {
+      "id": "OC-006",
+      "categoria": "LIMPEZA",
+      "descricao": "Pedido de varrição da avenida três vezes ao dia.",
+      "setor": "LESTE",
+      "local": "Avenida Sol Nascente",
+      "dia_abertura": 3,
+      "status": "RECUSADA",
+      "dia_conclusao": null,
+      "autor": "USR018",
+      "apoios": []
+    },
+    {
+      "id": "OC-007",
+      "categoria": "ACESSIBILIDADE",
+      "descricao": "Falta de piso tátil na entrada principal.",
+      "setor": "OESTE",
+      "local": "Escola Municipal Caminhos do Sol",
+      "dia_abertura": 4,
+      "status": "EM_ANALISE",
+      "dia_conclusao": null,
+      "autor": "USR022",
+      "apoios": []
+    },
+    {
+      "id": "OC-008",
+      "categoria": "CONSERVACAO",
+      "descricao": "Bancos de madeira quebrados.",
+      "setor": "LESTE",
+      "local": "Praça dos Encontros",
+      "dia_abertura": 5,
+      "status": "EM_ATENDIMENTO",
+      "dia_conclusao": null,
+      "autor": "USR024",
+      "apoios": []
+    },
+    {
+      "id": "OC-009",
+      "categoria": "ILUMINACAO",
+      "descricao": "Trecho sem iluminação entre dois quarteirões.",
+      "setor": "OESTE",
+      "local": "Rua do Horizonte",
+      "dia_abertura": 7,
+      "status": "ABERTA",
+      "dia_conclusao": null,
+      "autor": "USR008",
+      "apoios": []
+    },
+    {
+      "id": "OC-010",
+      "categoria": "LIMPEZA",
+      "descricao": "Lixeiras transbordando no fim de semana.",
+      "setor": "LESTE",
+      "local": "Praça dos Encontros",
+      "dia_abertura": 9,
+      "status": "ABERTA",
+      "dia_conclusao": null,
+      "autor": "USR025",
+      "apoios": []
+    },
+    {
+      "id": "OC-011",
+      "categoria": "ACESSIBILIDADE",
+      "descricao": "Calçada sem rebaixamento para cadeira de rodas.",
+      "setor": "LESTE",
+      "local": "Rua da Aurora",
+      "dia_abertura": 10,
+      "status": "ABERTA",
+      "dia_conclusao": null,
+      "autor": "USR020",
+      "apoios": []
+    },
+    {
+      "id": "OC-012",
+      "categoria": "CONSERVACAO",
+      "descricao": "Buraco na calçada perto da esquina.",
+      "setor": "OESTE",
+      "local": "Rua dos Girassóis",
+      "dia_abertura": 11,
+      "status": "ABERTA",
+      "dia_conclusao": null,
+      "autor": "USR023",
+      "apoios": []
+    }
+  ],
+  "historico": [
+    {
+      "dia": 2,
+      "id": "OC-001",
+      "de": "ABERTA",
+      "para": "EM_ANALISE",
+      "responsavel": "GESTOR",
+      "observacao": "Vistoria agendada."
+    },
+    {
+      "dia": 3,
+      "id": "OC-001",
+      "de": "EM_ANALISE",
+      "para": "EM_ATENDIMENTO",
+      "responsavel": "GESTOR",
+      "observacao": "Troca das lâmpadas iniciada."
+    },
+    {
+      "dia": 3,
+      "id": "OC-002",
+      "de": "ABERTA",
+      "para": "EM_ANALISE",
+      "responsavel": "GESTOR",
+      "observacao": "Volume de entulho avaliado."
+    },
+    {
+      "dia": 3,
+      "id": "OC-003",
+      "de": "ABERTA",
+      "para": "EM_ANALISE",
+      "responsavel": "GESTOR",
+      "observacao": "Rampa vistoriada."
+    },
+    {
+      "dia": 4,
+      "id": "OC-002",
+      "de": "EM_ANALISE",
+      "para": "EM_ATENDIMENTO",
+      "responsavel": "GESTOR",
+      "observacao": "Caçamba solicitada."
+    },
+    {
+      "dia": 4,
+      "id": "OC-003",
+      "de": "EM_ANALISE",
+      "para": "EM_ATENDIMENTO",
+      "responsavel": "GESTOR",
+      "observacao": "Reparo do piso iniciado."
+    },
+    {
+      "dia": 4,
+      "id": "OC-004",
+      "de": "ABERTA",
+      "para": "EM_ANALISE",
+      "responsavel": "GESTOR",
+      "observacao": "Alambrado avaliado."
+    },
+    {
+      "dia": 5,
+      "id": "OC-001",
+      "de": "EM_ATENDIMENTO",
+      "para": "CONCLUIDA",
+      "responsavel": "GESTOR",
+      "observacao": "Três postes religados."
+    },
+    {
+      "dia": 5,
+      "id": "OC-005",
+      "de": "ABERTA",
+      "para": "EM_ANALISE",
+      "responsavel": "GESTOR",
+      "observacao": "Aguardando peça de reposição."
+    },
+    {
+      "dia": 5,
+      "id": "OC-006",
+      "de": "ABERTA",
+      "para": "EM_ANALISE",
+      "responsavel": "GESTOR",
+      "observacao": "Pedido comparado com a rotina de limpeza."
+    },
+    {
+      "dia": 6,
+      "id": "OC-003",
+      "de": "EM_ATENDIMENTO",
+      "para": "CONCLUIDA",
+      "responsavel": "GESTOR",
+      "observacao": "Piso da rampa refeito."
+    },
+    {
+      "dia": 6,
+      "id": "OC-004",
+      "de": "EM_ANALISE",
+      "para": "EM_ATENDIMENTO",
+      "responsavel": "GESTOR",
+      "observacao": "Material comprado."
+    },
+    {
+      "dia": 6,
+      "id": "OC-007",
+      "de": "ABERTA",
+      "para": "EM_ANALISE",
+      "responsavel": "GESTOR",
+      "observacao": "Projeto do piso tátil em avaliação."
+    },
+    {
+      "dia": 7,
+      "id": "OC-006",
+      "de": "EM_ANALISE",
+      "para": "RECUSADA",
+      "responsavel": "GESTOR",
+      "observacao": "A avenida já tem varrição diária."
+    },
+    {
+      "dia": 7,
+      "id": "OC-008",
+      "de": "ABERTA",
+      "para": "EM_ANALISE",
+      "responsavel": "GESTOR",
+      "observacao": "Bancos vistoriados."
+    },
+    {
+      "dia": 8,
+      "id": "OC-002",
+      "de": "EM_ATENDIMENTO",
+      "para": "CONCLUIDA",
+      "responsavel": "GESTOR",
+      "observacao": "Entulho retirado."
+    },
+    {
+      "dia": 9,
+      "id": "OC-008",
+      "de": "EM_ANALISE",
+      "para": "EM_ATENDIMENTO",
+      "responsavel": "GESTOR",
+      "observacao": "Marcenaria comunitária acionada."
+    }
+  ],
+  "fila_triagem": [
+    "OC-009",
+    "OC-010",
+    "OC-011",
+    "OC-012"
+  ],
+  "rejeitados": [
+    {
+      "registro": {
+        "id": "OC-013",
+        "categoria": "",
+        "setor": "OESTE",
+        "local": "Rua do Horizonte",
+        "descricao": "Problema na rua, sem informar o tipo.",
+        "dia_abertura": 8,
+        "status": "ABERTA",
+        "autor": "USR008"
+      },
+      "problemas": [
+        "campo obrigatório ausente: categoria"
+      ]
+    },
+    {
+      "registro": {
+        "id": "OC-014",
+        "categoria": "LIMPEZA",
+        "setor": "LESTE",
+        "local": "Praça dos Encontros",
+        "descricao": "Folhas acumuladas no parquinho.",
+        "dia_abertura": 9,
+        "status": "RESOLVENDO",
+        "autor": "USR024"
+      },
+      "problemas": [
+        "situação desconhecida: RESOLVENDO"
+      ]
+    },
+    {
+      "registro": {
+        "id": "OC-003",
+        "categoria": "ILUMINACAO",
+        "setor": "OESTE",
+        "local": "Rua dos Girassóis",
+        "descricao": "Poste inclinado.",
+        "dia_abertura": 10,
+        "status": "ABERTA",
+        "autor": "USR023"
+      },
+      "problemas": [
+        "código repetido: OC-003"
+      ]
+    }
+  ],
+  "agenda": [
+    {
+      "id": "EV-001",
+      "tipo": "ENCONTRO",
+      "titulo": "Encontro de HALLOWEEN",
+      "setor": "LESTE",
+      "local": "Hospital Solarian",
+      "dia": 16,
+      "hora": 15,
+      "descricao": "Chegar no horario",
+      "cancelado": false
+    }
+  ],
+  "proximo_evento": 2
+}
