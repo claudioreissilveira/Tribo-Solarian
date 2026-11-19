@@ -1,5 +1,5 @@
 {
-  "versao": 3,
+  "versao": 5,
   "dia_atual": 12,
   "proximo_numero": 15,
   "ocorrencias": [
@@ -60,7 +60,7 @@
       "dia_abertura": 3,
       "status": "EM_ANALISE",
       "dia_conclusao": null,
-      "autor": "USR016",
+      "autor": "USR017",
       "apoios": []
     },
     {
@@ -339,18 +339,6 @@
       ]
     }
   ],
-  "agenda": [
-    {
-      "id": "EV-001",
-      "tipo": "ENCONTRO",
-      "titulo": "Encontro de HALLOWEEN",
-      "setor": "LESTE",
-      "local": "Hospital Solarian",
-      "dia": 16,
-      "hora": 15,
-      "descricao": "Chegar no horario",
-      "cancelado": false
-    }
-  ],
-  "proximo_evento": 2
+  "agenda": [],
+  "proximo_evento": 1
 }
