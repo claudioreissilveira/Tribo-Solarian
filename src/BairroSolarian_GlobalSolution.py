@@ -1,6 +1,6 @@
 """
-TRIBO SOLARIAN | FIAP ON - Ciência da Computação - 2026.2
-Global Solution | CitizenTech - Neighborhood Action Dashboard 
+TRIBO SOLARIAN | FIAP ON - Ciência da Computação - 2026.2 |
+Global Solution | CitizenTech - Neighborhood Action Dashboard |
 
 Integrantes:
     Cláudio Roberto Grillo Reis Silveira | RM575353
