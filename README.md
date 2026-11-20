@@ -110,7 +110,7 @@ A última expressão aplica o horário de silêncio do bairro à agenda. Um even
 O sistema requer apenas o Python 3 e utiliza somente a biblioteca padrão.
 
 ```bash
-python src/BairroSolarian_GlobalSolution.py
+python src/sistema.py
 ```
 
 No Windows, também é possível executar o arquivo `BairroSolarian.exe`, que dispensa a instalação do Python.
@@ -230,7 +230,7 @@ Link do vídeo no YouTube: *a inserir*.
 ├── images/
 │   └── BairroSolarian.png                  mapa do bairro
 └── src/
-    └── BairroSolarian_GlobalSolution.py    código do sistema
+    └── sistema.py                          código do sistema
 ```
 
 ## Uso de Inteligência Artificial
