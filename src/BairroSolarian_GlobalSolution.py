@@ -20,7 +20,7 @@ a vida em comunidade por meio da organização das informações.
 
 Como executar:  
 
-python src/sistema.py 
+python src/BairroSolarian_GlobalSolution.py 
 OU
 baixar .exe -> clicar duas vezes no arquivo -> utilizar sistema
 
