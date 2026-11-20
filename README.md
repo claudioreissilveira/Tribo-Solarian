@@ -199,7 +199,7 @@ Tempo médio até a conclusão: 5,0 dia(s)  (soma dos dias 15 / 3 concluídas)
 
 ## 9. Vídeo de apresentação
 
-Link do vídeo no YouTube: *a inserir*.
+Link do vídeo no YouTube: [https://youtu.be/rtZDW3kPb-M](https://youtu.be/rtZDW3kPb-M)
 
 ## 10. Conclusões, limitações e aprendizados
 
