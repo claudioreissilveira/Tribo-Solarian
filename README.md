@@ -199,7 +199,9 @@ Tempo médio até a conclusão: 5,0 dia(s)  (soma dos dias 15 / 3 concluídas)
 
 ## 9. Vídeo de apresentação
 
-Link do vídeo no YouTube: [https://youtu.be/rtZDW3kPb-M](https://youtu.be/rtZDW3kPb-M)
+Link do vídeo: [https://drive.google.com/drive/folders/1p7yk4Ut84CFyxiywq9VTu412-QFPdk2u](https://drive.google.com/drive/folders/1p7yk4Ut84CFyxiywq9VTu412-QFPdk2u)
+
+O vídeo foi disponibilizado no Google Drive porque a publicação no YouTube não foi concluída em razão de uma falha no envio pela plataforma.
 
 ## 10. Conclusões, limitações e aprendizados
 
